@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI CyberShield - Phishing Detection with Machine Learning</title>
+  <meta name="description" content="AI-powered cybersecurity platform that detects phishing URLs and suspicious messages using Machine Learning - Random Forest and Naive Bayes running fully in your browser." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2322d3ee' d='M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z'/%3E%3C/svg%3E" />
+  <style>
+/* AI CyberShield - dark cybersecurity theme */
+:root {
+  --bg: #0b1220;
+  --bg-soft: #101a2e;
+  --card: #131f36;
+  --card-edge: #1e2c49;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --cyan: #22d3ee;
+  --green: #34d399;
+  --violet: #a78bfa;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  background:
+    radial-gradient(1000px 500px at 85% -10%, rgba(34, 211, 238, 0.08), transparent 60%),
+    radial-gradient(800px 400px at -10% 10%, rgba(52, 211, 153, 0.06), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+.mt { margin-top: 12px; }
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+.mono { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+code { background: var(--bg-soft); padding: 1px 6px; border-radius: 6px; font-size: 0.9em; }
+
+/* ---------------- topbar ---------------- */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(11, 18, 32, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--card-edge);
+}
+.bar-inner { display: flex; align-items: center; gap: 18px; height: 62px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.brand-icon {
+  width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
+  background: linear-gradient(135deg, rgba(34,211,238,.18), rgba(52,211,153,.18));
+  color: var(--cyan); border: 1px solid rgba(34,211,238,.35);
+}
+.brand strong { display: block; font-size: 15.5px; letter-spacing: .2px; }
+.brand small { color: var(--muted); font-size: 9.5px; letter-spacing: 1.4px; }
+.nav { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+.nav-link {
+  color: var(--muted); text-decoration: none; font-size: 13.5px; font-weight: 600;
+  padding: 7px 12px; border-radius: 9px; transition: all .15s;
+}
+.nav-link:hover { color: var(--text); background: var(--bg-soft); }
+.nav-link.active { color: #06121f; background: var(--cyan); }
+.ai-chip {
+  font-size: 11.5px; color: var(--green); border: 1px solid rgba(52,211,153,.4);
+  padding: 5px 10px; border-radius: 999px; white-space: nowrap;
+}
+.ai-chip.off { color: var(--amber); border-color: rgba(245,158,11,.4); }
+@media (max-width: 900px) { .ai-chip { display: none; } }
+
+/* ---------------- layout ---------------- */
+main.wrap { padding-top: 34px; padding-bottom: 60px; }
+.page-title { margin: 6px 0 4px; font-size: 26px; }
+.page-sub { margin: 0 0 22px; color: var(--muted); }
+
+.hero { display: flex; gap: 30px; align-items: center; margin: 10px 0 38px; }
+.hero-text { flex: 1; }
+.kicker {
+  color: var(--cyan); font-size: 11px; letter-spacing: 2px; font-weight: 700;
+  border: 1px solid rgba(34,211,238,.35); padding: 5px 12px; border-radius: 999px;
+}
+.hero h1 { font-size: 40px; line-height: 1.15; margin: 16px 0 12px; }
+.hero .accent { color: var(--cyan); }
+.lead { color: var(--muted); font-size: 15.5px; line-height: 1.65; max-width: 560px; }
+.hero-actions { display: flex; gap: 12px; margin: 22px 0; }
+.hero-art { opacity: .9; }
+@media (max-width: 800px) { .hero { flex-direction: column; text-align: center; } .hero-art { display: none; } .hero-actions { justify-content: center; } }
+
+.stat-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.stat {
+  background: var(--card); border: 1px solid var(--card-edge); border-radius: 12px;
+  padding: 10px 18px; min-width: 110px; text-align: center;
+}
+.stat-num { display: block; font-size: 22px; font-weight: 800; color: var(--cyan); }
+.stat-cap { color: var(--muted); font-size: 11.5px; letter-spacing: .6px; }
+
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 26px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 800px) { .grid3, .grid2 { grid-template-columns: 1fr; } }
+
+/* ---------------- cards ---------------- */
+.card {
+  background: var(--card); border: 1px solid var(--card-edge);
+  border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px;
+}
+.card h4 { margin: 0 0 10px; font-size: 15px; }
+.card.feature h3 { margin: 10px 0 8px; font-size: 16px; }
+.card.feature p { color: var(--muted); font-size: 13.5px; line-height: 1.6; margin: 0; }
+.card-ico {
+  width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center;
+}
+.card-ico.cyan { color: var(--cyan); background: rgba(34,211,238,.12); }
+.card-ico.violet { color: var(--violet); background: rgba(167,139,250,.12); }
+.card-ico.green { color: var(--green); background: rgba(52,211,153,.12); }
+.note { border-left: 3px solid var(--green); }
+
+/* ---------------- inputs & buttons ---------------- */
+.label { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 8px; letter-spacing: .4px; }
+.input {
+  flex: 1; width: 100%; background: var(--bg-soft); color: var(--text);
+  border: 1px solid var(--card-edge); border-radius: 10px; padding: 12px 14px;
+  font-size: 14px; outline: none; transition: border-color .15s;
+  font-family: ui-monospace, Consolas, monospace;
+}
+textarea.input { font-family: inherit; resize: vertical; }
+.input:focus { border-color: var(--cyan); }
+.input-row { display: flex; gap: 10px; }
+.btn {
+  border: 1px solid transparent; border-radius: 10px; padding: 11px 18px;
+  font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all .15s;
+}
+.btn.primary { background: var(--cyan); color: #06121f; }
+.btn.primary:hover { filter: brightness(1.1); }
+.btn.ghost { background: transparent; color: var(--cyan); border-color: rgba(34,211,238,.45); }
+.btn.ghost:hover { background: rgba(34,211,238,.08); }
+.btn.ghost.danger { color: var(--red); border-color: rgba(239,68,68,.45); }
+.btn.ghost.danger:hover { background: rgba(239,68,68,.08); }
+.samples { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.chip {
+  background: var(--bg-soft); color: var(--text); border: 1px solid var(--card-edge);
+  border-radius: 999px; padding: 5px 12px; font-size: 12px; cursor: pointer;
+}
+.chip:hover { border-color: var(--cyan); color: var(--cyan); }
+.chip.active { background: var(--cyan); color: #06121f; border-color: var(--cyan); }
+
+/* ---------------- verdict ---------------- */
+.verdict { display: flex; align-items: center; gap: 14px; padding: 4px 2px 14px; }
+.verdict.danger .verdict-icon, .verdict.danger .verdict-label { color: var(--red); }
+.verdict.warn .verdict-icon, .verdict.warn .verdict-label { color: var(--amber); }
+.verdict.safe .verdict-icon, .verdict.safe .verdict-label { color: var(--green); }
+.verdict-label { font-size: 21px; font-weight: 800; }
+.verdict-sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.verdict-conf { margin-left: auto; text-align: right; }
+.conf-number { font-size: 24px; font-weight: 800; color: var(--text); }
+.conf-caption { font-size: 10.5px; color: var(--muted); letter-spacing: .8px; text-transform: uppercase; }
+.conf-bar { height: 8px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; }
+.conf-fill { height: 100%; border-radius: 999px; transition: width .5s ease; }
+.conf-fill.safe { background: linear-gradient(90deg, #10b981, #34d399); }
+.conf-fill.warn { background: linear-gradient(90deg, #d97706, #f59e0b); }
+.conf-fill.danger { background: linear-gradient(90deg, #dc2626, #ef4444); }
+
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+@media (max-width: 800px) { .result-grid { grid-template-columns: 1fr; } }
+.risk-list { margin: 0; padding-left: 18px; color: var(--text); }
+.risk-list li { margin-bottom: 7px; font-size: 13.5px; line-height: 1.5; }
+.feature-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.feature-table th, .feature-table td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--card-edge); }
+.feature-table th { color: var(--muted); font-weight: 600; }
+.proba-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: 12.5px; }
+.proba-row > span:first-child { min-width: 80px; color: var(--muted); }
+.proba-row .conf-bar { flex: 1; }
+.actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.actions .btn { padding: 8px 13px; font-size: 12.5px; }
+
+/* ---------------- AI panel / chat ---------------- */
+.ai-panel { margin-top: 14px; background: var(--bg-soft); border: 1px solid var(--card-edge); border-radius: 10px; padding: 13px 15px; }
+.ai-badge { font-size: 11px; letter-spacing: 1px; color: var(--cyan); margin-bottom: 8px; text-transform: uppercase; }
+.ai-badge.warn { color: var(--amber); }
+.ai-text { font-size: 13.5px; line-height: 1.65; }
+
+.chat-card { display: flex; flex-direction: column; min-height: 420px; }
+.chat-log { flex: 1; overflow-y: auto; max-height: 380px; display: flex; flex-direction: column; gap: 10px; padding: 4px 2px; }
+.chat-msg { display: flex; }
+.chat-msg.user { justify-content: flex-end; }
+.chat-msg .bubble {
+  max-width: 78%; padding: 10px 14px; border-radius: 14px; font-size: 13.5px; line-height: 1.55;
+  background: var(--bg-soft); border: 1px solid var(--card-edge);
+}
+.chat-msg.user .bubble { background: rgba(34,211,238,.14); border-color: rgba(34,211,238,.4); }
+.chat-typing { padding: 8px 2px; font-size: 12.5px; }
+
+/* ---------------- history / reports ---------------- */
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.table-card { padding: 6px 10px; }
+.history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.history-table th { text-align: left; color: var(--muted); font-size: 11.5px; letter-spacing: .8px; padding: 10px 10px; border-bottom: 1px solid var(--card-edge); }
+.history-table td { padding: 10px; border-bottom: 1px solid rgba(30, 44, 73, 0.5); }
+.cell-input { max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+.pill-cyan { color: var(--cyan); background: rgba(34,211,238,.12); }
+.pill-violet { color: var(--violet); background: rgba(167,139,250,.12); }
+.pill-green { color: var(--green); background: rgba(52,211,153,.12); }
+.pill-amber { color: var(--amber); background: rgba(245,158,11,.12); }
+.pill-red { color: var(--red); background: rgba(239,68,68,.12); }
+
+/* ---------------- toasts & footer ---------------- */
+#toasts { position: fixed; right: 18px; bottom: 18px; display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+.toast {
+  background: var(--card); border: 1px solid var(--card-edge); color: var(--text);
+  padding: 11px 16px; border-radius: 10px; font-size: 13px;
+  opacity: 0; transform: translateY(8px); transition: all .3s;
+}
+.toast.show { opacity: 1; transform: none; }
+.toast.ok { border-color: rgba(52,211,153,.5); }
+.toast.warn { border-color: rgba(245,158,11,.5); }
+
+.footer { border-top: 1px solid var(--card-edge); padding: 18px 0 26px; }
+.footer .wrap { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); gap: 10px; flex-wrap: wrap; }
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- ================= NAVBAR ================= -->
+  <header class="topbar">
+    <div class="wrap bar-inner">
+      <a class="brand" href="#" data-goto="home">
+        <span class="brand-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+        </span>
+        <span>
+          <strong>AI CyberShield</strong>
+          <small>B.TECH CSE &middot; AI + CYBERSECURITY</small>
+        </span>
+      </a>
+      <nav class="nav">
+        <a href="#" class="nav-link" data-nav="home">Home</a>
+        <a href="#" class="nav-link" data-nav="urlscanner">URL Scanner</a>
+        <a href="#" class="nav-link" data-nav="messages">Message Detector</a>
+        <a href="#" class="nav-link" data-nav="analytics">Analytics</a>
+        <a href="#" class="nav-link" data-nav="history">History</a>
+        <a href="#" class="nav-link" data-nav="reports">Reports</a>
+        <a href="#" class="nav-link" data-nav="chat">AI Expert</a>
+        <a href="#" class="nav-link" data-nav="about">About</a>
+      </nav>
+      <span class="ai-chip" id="ai-chip">AI status...</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- ================= HOME ================= -->
+    <section data-section="home">
+      <div class="hero">
+        <div class="hero-text">
+          <span class="kicker">MACHINE LEARNING &middot; RUNS 100% IN YOUR BROWSER</span>
+          <h1>Detect phishing <span class="accent">before it clicks you</span></h1>
+          <p class="lead">
+            CyberShield analyses URLs and messages with two real trained models -
+            a <strong>Random Forest</strong> (100 decision trees) and
+            <strong>TF-IDF + Naive Bayes</strong> - converted to run offline in your browser.
+            Nothing you scan leaves your device.
+          </p>
+          <div class="hero-actions">
+            <button class="btn primary" data-goto="urlscanner">Scan a URL</button>
+            <button class="btn ghost" data-goto="messages">Check a message</button>
+          </div>
+          <div class="stat-row">
+            <div class="stat"><span class="stat-num" id="stat-total">0</span><span class="stat-cap">Scans</span></div>
+            <div class="stat"><span class="stat-num" id="stat-urls">0</span><span class="stat-cap">URLs checked</span></div>
+            <div class="stat"><span class="stat-num" id="stat-msgs">0</span><span class="stat-cap">Messages checked</span></div>
+            <div class="stat"><span class="stat-num" id="stat-threats">0</span><span class="stat-cap">Threats found</span></div>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="180" height="180" fill="none" stroke="url(#g1)" stroke-width="1.2"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#34d399"/></linearGradient></defs><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="card feature">
+          <div class="card-ico cyan"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><link xmlns="http://www.w3.org/2000/svg" d=""/><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></div>
+          <h3>URL Phishing Scanner</h3>
+          <p>17 engineered features (IP hosts, suspicious TLDs, keywords, structure) fed to a Random Forest classifier trained on legitimate and phishing URL patterns.</p>
+        </div>
+        <div class="card feature">
+          <div class="card-ico violet"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <h3>Message Detector</h3>
+          <p>TF-IDF vectorisation with word n-grams plus a Multinomial Naive Bayes classifier spot scam SMS and emails - urgent tone, credential requests, too-good-to-be-true offers.</p>
+        </div>
+        <div class="card feature">
+          <div class="card-ico green"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></div>
+          <h3>AI Cyber Expert</h3>
+          <p>Chat with an AI assistant that explains verdicts and safe browsing habits via the API key in <code>config.js</code>. The ML scanners work fully offline without it.</p>
+        </div>
+      </div>
+
+      <div class="card note">
+        <strong>Privacy by design:</strong> every scan runs locally with JavaScript implementations of the trained
+        scikit-learn models (verified prediction-exact). History lives in your browser's localStorage only.
+      </div>
+    </section>
+
+    <!-- ================= URL SCANNER ================= -->
+    <section data-section="urlscanner" hidden>
+      <h2 class="page-title">URL Phishing Scanner</h2>
+      <p class="page-sub">Random Forest &middot; 100 trees &middot; 17 features &middot; prediction runs offline in your browser.</p>
+      <div class="card">
+        <label class="label" for="url-input">Enter a URL</label>
+        <div class="input-row">
+          <input id="url-input" class="input" type="text" placeholder="https://example.com/login" spellcheck="false" />
+          <button class="btn primary" id="url-scan-btn">Scan URL</button>
+        </div>
+        <div class="samples">
+          <span class="muted small">Try samples:</span>
+          <button class="chip sample-url" data-url="https://www.google.com/search?q=cybersecurity">google.com/search</button>
+          <button class="chip sample-url" data-url="http://secure-paypal-update.tk/login">secure-paypal-update.tk</button>
+          <button class="chip sample-url" data-url="http://192.168.1.1:8080/verify-account?ref=%20ok">IP host with port</button>
+          <button class="chip sample-url" data-url="https://www.amazon.in/dp/B0ABC123?ref_=search">amazon.in product</button>
+        </div>
+      </div>
+      <div id="url-result" hidden></div>
+    </section>
+
+    <!-- ================= MESSAGE DETECTOR ================= -->
+    <section data-section="messages" hidden>
+      <h2 class="page-title">Phishing Message Detector</h2>
+      <p class="page-sub">TF-IDF + Multinomial Naive Bayes &middot; word 1-2 grams &middot; prediction runs offline in your browser.</p>
+      <div class="card">
+        <label class="label" for="msg-input">Paste an SMS / email / WhatsApp text</label>
+        <textarea id="msg-input" class="input" rows="5" placeholder="e.g. URGENT: Your bank account has been suspended. Click here to verify..."></textarea>
+        <div class="input-row mt">
+          <button class="btn primary" id="msg-scan-btn">Analyse message</button>
+        </div>
+        <div class="samples">
+          <span class="muted small">Try samples:</span>
+          <button class="chip sample-msg" data-msg="Hi, can we meet tomorrow at 3 PM for the project discussion?">Normal meeting msg</button>
+          <button class="chip sample-msg" data-msg="URGENT: Your bank account has been suspended. Click here to verify: http://suspicious-link.tk">Bank suspension scam</button>
+          <button class="chip sample-msg" data-msg="Congratulations! You've won $1,000,000. Claim your prize now: http://fake-prize.ml">Lottery scam</button>
+        </div>
+      </div>
+      <div id="msg-result" hidden></div>
+    </section>
+
+    <!-- ================= ANALYTICS ================= -->
+    <section data-section="analytics" hidden>
+      <h2 class="page-title">Threat Analytics</h2>
+      <p class="page-sub">Visual overview of your scans - computed from local history.</p>
+      <p class="card muted" id="analytics-empty">No scans yet. Run a few URL or message scans and return here for live charts.</p>
+      <div class="grid2" id="analytics-body" hidden>
+        <div class="card"><h4>Verdict breakdown</h4><canvas id="pie-chart" height="230"></canvas></div>
+        <div class="card"><h4>Scans per day (last 7 days)</h4><canvas id="bar-chart" height="230"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ================= HISTORY ================= -->
+    <section data-section="history" hidden>
+      <h2 class="page-title">Scan History</h2>
+      <p class="page-sub">Stored locally in your browser (localStorage). Never uploaded anywhere.</p>
+      <div class="toolbar">
+        <div class="chips">
+          <button class="chip active" data-hfilter="All">All</button>
+          <button class="chip" data-hfilter="URL">URLs</button>
+          <button class="chip" data-hfilter="Message">Messages</button>
+          <button class="chip" data-hfilter="Phishing">Threats</button>
+        </div>
+        <button class="btn ghost danger" id="clear-history">Clear history</button>
+      </div>
+      <p class="card muted" id="history-empty">Nothing here yet - your scans will appear after the first URL or message check.</p>
+      <div class="card table-card" id="history-table" hidden>
+        <table class="history-table">
+          <thead><tr><th>Type</th><th>Input</th><th>Verdict</th><th>Confidence</th><th>When</th></tr></thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= REPORTS ================= -->
+    <section data-section="reports" hidden>
+      <h2 class="page-title">Security Reports</h2>
+      <p class="page-sub">Export your complete scan log for documentation or project submission.</p>
+      <div class="grid2">
+        <div class="card">
+          <h4>CSV report</h4>
+          <p class="muted">Spreadsheet format - opens in Excel / Google Sheets. One row per scan with verdict, confidence and risk level.</p>
+          <button class="btn primary" id="report-csv">Download CSV</button>
+        </div>
+        <div class="card">
+          <h4>TXT report</h4>
+          <p class="muted">Formatted text report with a summary section and detailed scan log - ready to print or attach.</p>
+          <button class="btn ghost" id="report-txt">Download TXT</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= AI CHAT ================= -->
+    <section data-section="chat" hidden>
+      <h2 class="page-title">AI Cyber Expert</h2>
+      <p class="page-sub">Explanations, safety tips and second opinions - powered by the key in <code>config.js</code>.</p>
+      <div class="card chat-card">
+        <div class="chat-log" id="chat-log"></div>
+        <div class="chat-typing muted" id="chat-typing" hidden>AI expert is thinking...</div>
+        <div class="input-row mt">
+          <input id="chat-input" class="input" type="text" placeholder="Ask about a suspicious link, OTP scam, safe browsing..." />
+          <button class="btn primary" id="chat-send">Send</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ABOUT ================= -->
+    <section data-section="about" hidden>
+      <h2 class="page-title">About the project</h2>
+      <div class="grid2">
+        <div class="card">
+          <h4>How the ML works</h4>
+          <p>CyberShield trains two scikit-learn models (<code>train_models.py</code>) and converts them to JavaScript
+          so this static site can score inputs instantly, with no server:</p>
+          <ul class="risk-list">
+            <li><strong>Random Forest</strong> - 100 decision trees, max depth 10, majority vote over 17 URL features.</li>
+            <li><strong>TF-IDF + Multinomial NB</strong> - 773 word/n-gram features, log-probability scoring.</li>
+            <li>Browser engine verified prediction-exact against sklearn (100% match on held-out fixtures).</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Tech stack</h4>
+          <ul class="risk-list">
+            <li>Python, scikit-learn, pandas (training pipeline)</li>
+            <li>HTML5 + CSS3 + vanilla JS (this site)</li>
+            <li>Chart.js (analytics), localStorage (history), no backend needed</li>
+            <li>Optional AI layer: Z.ai GLM / Google Gemini via <code>config.js</code></li>
+          </ul>
+          <p class="muted small mt">Educational project - verdicts are model estimates, not a substitute for careful browsing.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <span>AI CyberShield - B.Tech CSE major project (AI + Cybersecurity)</span>
+      <span class="muted">ML runs locally &middot; history stays in your browser</span>
+    </div>
+  </footer>
+
+  <div id="toasts"></div>
+
+    <script>
+/**
+ * AI CyberShield - site configuration.
+ *
+ * === IMPORTANT SECURITY NOTE ==========================================
+ * This file is PUBLIC when hosted on GitHub Pages. Anyone can read the key
+ * you place here. Use a key with a spending limit / quota cap, and rotate it
+ * if it leaks. For a private setup, leave the keys empty - every ML feature
+ * of this site works fully offline without any key.
+ * ======================================================================
+ *
+ * Supported AI providers (auto-detected from the key prefix):
+ *   - Z.ai GLM      : key starts with "AQ."   -> OpenAI-compatible endpoint
+ *   - Google Gemini : key starts with "AIza"  -> generativelanguage.googleapis.com
+ */
+window.CYBER_CONFIG = {
+  // Primary key configured for this project (Z.ai / GLM):
+  ZAI_API_KEY: "AQ.Ab8RN6JLlShJaW_-GnWPH5c4np2tADZnM8pHhqy40nRs-VrQ3g",
+  ZAI_BASE_URL: "https://api.z.ai/api/paas/v4",
+  ZAI_MODEL: "glm-4.6",
+
+  // Optional alternative - paste a Google AI Studio key here (starts with AIza):
+  GEMINI_API_KEY: "",
+  GEMINI_MODEL: "gemini-2.0-flash",
+
+  // auto | zai | gemini | off
+  AI_PROVIDER: "auto",
+
+  AI_TIMEOUT_MS: 45000,
+};
+</script>
+  <script>
+// Auto-generated by scripts/export_models.py - do not edit by hand.
+// Contains the trained CyberShield models converted for browser inference:
+//   Random Forest (100 trees) - URL phishing detection
+//   TF-IDF + Multinomial Naive Bayes - message phishing detection
+window.CYBER_MODELS = {"random_forest": {"feature_names": ["url_length", "num_dots", "num_hyphens", "num_underscores", "num_slashes", "num_digits", "has_ip", "has_at", "has_https", "has_port", "num_subdomains", "suspicious_tld", "num_suspicious_words", "has_double_slash_redirect", "has_percent", "has_equal_sign", "has_question"], "classes": [0, 1], "trees": [{"feature": [12, 1, 11, -2, -2, -2, 2, 5, -2, -2, -2], "threshold": [0.5, 1.5, 0.5, -2.0, -2.0, -2.0, 0.5, 2.5, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, 7, 8, -1, -1, -1], "right": [6, 5, 4, -1, -1, -1, 10, 9, -1, -1, -1], "value": [[0.4875, 0.5125], [0.87804878, 0.12195122], [0.28571429, 0.71428571], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0], [0.07692308, 0.92307692], [0.6, 0.4], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [8, -2, -2], "threshold": [0.5, -2.0, -2.0], "left": [1, -1, -1], "right": [2, -1, -1], "value": [[0.5125, 0.4875], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [10, 11, -2, -2, 10, -2, 1, -2, -2], "threshold": [1.5, 0.5, -2.0, -2.0, 2.5, -2.0, 3.5, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, 7, -1, -1], "right": [4, 3, -1, -1, 6, -1, 8, -1, -1], "value": [[0.575, 0.425], [0.08333333, 0.91666667], [1.0, 0.0], [0.0, 1.0], [0.97727273, 0.02272727], [1.0, 0.0], [0.83333333, 0.16666667], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [10, 12, 0, -2, -2, -2, 12, -2, 6, -2, -2], "threshold": [1.5, 0.5, 35.0, -2.0, -2.0, -2.0, 0.5, -2.0, 0.5, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, 7, -1, 9, -1, -1], "right": [6, 5, 4, -1, -1, -1, 8, -1, 10, -1, -1], "value": [[0.4125, 0.5875], [0.04444444, 0.95555556], [0.5, 0.5], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [0.88571429, 0.11428571], [1.0, 0.0], [0.33333333, 0.66666667], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [11, 8, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.5625, 0.4375], [0.9375, 0.0625], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [1, -2, 6, -2, -2], "threshold": [1.5, -2.0, 0.5, -2.0, -2.0], "left": [1, -1, 3, -1, -1], "right": [2, -1, 4, -1, -1], "value": [[0.4625, 0.5375], [0.0, 1.0], [0.94871795, 0.05128205], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [6, 12, 10, 2, -2, -2, -2, 2, -2, -2, -2], "threshold": [0.5, 0.5, 1.5, 1.0, -2.0, -2.0, -2.0, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, 3, 4, -1, -1, -1, 8, -1, -1, -1], "right": [10, 7, 6, 5, -1, -1, -1, 9, -1, -1, -1], "value": [[0.55, 0.45], [0.55696203, 0.44303797], [0.93181818, 0.06818182], [0.5, 0.5], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0], [0.08571429, 0.91428571], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [8, -2, 11, -2, -2], "threshold": [0.5, -2.0, 0.5, -2.0, -2.0], "left": [1, -1, 3, -1, -1], "right": [2, -1, 4, -1, -1], "value": [[0.475, 0.525], [0.0, 1.0], [0.97435897, 0.02564103], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [12, 2, -2, -2, 0, 8, -2, -2, 1, -2, -2], "threshold": [0.5, 1.0, -2.0, -2.0, 30.5, 0.5, -2.0, -2.0, 1.5, -2.0, -2.0], "left": [1, 2, -1, -1, 5, 6, -1, -1, 9, -1, -1], "right": [4, 3, -1, -1, 8, 7, -1, -1, 10, -1, -1], "value": [[0.4625, 0.5375], [0.89473684, 0.10526316], [1.0, 0.0], [0.0, 1.0], [0.07142857, 0.92857143], [0.33333333, 0.66666667], [0.0, 1.0], [1.0, 0.0], [0.05128205, 0.94871795], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [1, 0, -2, -2, -2], "threshold": [1.5, 28.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.4, 0.6], [0.02040816, 0.97959184], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [10, 11, -2, -2, 10, -2, -2], "threshold": [1.5, 0.5, -2.0, -2.0, 2.5, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, -1], "right": [4, 3, -1, -1, 6, -1, -1], "value": [[0.425, 0.575], [0.02222222, 0.97777778], [1.0, 0.0], [0.0, 1.0], [0.94285714, 0.05714286], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [1, 2, -2, -2, 12, -2, 5, -2, -2], "threshold": [1.5, 0.5, -2.0, -2.0, 0.5, -2.0, 2.5, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, 7, -1, -1], "right": [4, 3, -1, -1, 6, -1, 8, -1, -1], "value": [[0.5875, 0.4125], [0.08571429, 0.91428571], [1.0, 0.0], [0.0, 1.0], [0.97777778, 0.02222222], [1.0, 0.0], [0.5, 0.5], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [10, 2, -2, -2, 5, -2, -2], "threshold": [1.5, 0.5, -2.0, -2.0, 4.0, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, -1], "right": [4, 3, -1, -1, 6, -1, -1], "value": [[0.475, 0.525], [0.02439024, 0.97560976], [1.0, 0.0], [0.0, 1.0], [0.94871795, 0.05128205], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [1, 0, -2, -2, 12, -2, 12, -2, -2], "threshold": [1.5, 29.0, -2.0, -2.0, 0.5, -2.0, 1.5, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, 7, -1, -1], "right": [4, 3, -1, -1, 6, -1, 8, -1, -1], "value": [[0.475, 0.525], [0.04651163, 0.95348837], [1.0, 0.0], [0.0, 1.0], [0.97297297, 0.02702703], [1.0, 0.0], [0.5, 0.5], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [2, 5, -2, -2, -2], "threshold": [1.0, 2.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.5, 0.5], [0.95238095, 0.04761905], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [5, 8, -2, -2, -2], "threshold": [5.5, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.5625, 0.4375], [0.57692308, 0.42307692], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [12, 10, 8, -2, -2, -2, 2, 5, -2, -2, -2], "threshold": [0.5, 1.5, 0.5, -2.0, -2.0, -2.0, 0.5, 2.5, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, 7, 8, -1, -1, -1], "right": [6, 5, 4, -1, -1, -1, 10, 9, -1, -1, -1], "value": [[0.475, 0.525], [0.90243902, 0.09756098], [0.42857143, 0.57142857], [0.0, 1.0], [1.0, 0.0], [1.0, 0.0], [0.02564103, 0.97435897], [0.33333333, 0.66666667], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [8, -2, 11, -2, -2], "threshold": [0.5, -2.0, 0.5, -2.0, -2.0], "left": [1, -1, 3, -1, -1], "right": [2, -1, 4, -1, -1], "value": [[0.4625, 0.5375], [0.0, 1.0], [0.94871795, 0.05128205], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [8, -2, 11, -2, -2], "threshold": [0.5, -2.0, 0.5, -2.0, -2.0], "left": [1, -1, 3, -1, -1], "right": [2, -1, 4, -1, -1], "value": [[0.45, 0.55], [0.0, 1.0], [0.97297297, 0.02702703], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [2, 5, -2, -2, -2], "threshold": [0.5, 5.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.5625, 0.4375], [0.95744681, 0.04255319], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [2, 12, -2, 10, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, 2.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, 4, -1, -1, -1], "right": [6, 3, -1, 5, -1, -1, -1], "value": [[0.4625, 0.5375], [0.94871795, 0.05128205], [1.0, 0.0], [0.66666667, 0.33333333], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [8, -2, 2, -2, -2], "threshold": [0.5, -2.0, 1.0, -2.0, -2.0], "left": [1, -1, 3, -1, -1], "right": [2, -1, 4, -1, -1], "value": [[0.4625, 0.5375], [0.0, 1.0], [0.97368421, 0.02631579], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [11, 8, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.475, 0.525], [0.92682927, 0.07317073], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [12, 8, -2, -2, 1, -2, 4, 0, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, -2.0, 1.5, -2.0, 3.5, 29.0, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, 7, 8, -1, -1, -1], "right": [4, 3, -1, -1, 6, -1, 10, 9, -1, -1, -1], "value": [[0.4875, 0.5125], [0.89473684, 0.10526316], [0.0, 1.0], [1.0, 0.0], [0.11904762, 0.88095238], [0.0, 1.0], [0.55555556, 0.44444444], [0.71428571, 0.28571429], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [2, 8, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.4875, 0.5125], [0.92857143, 0.07142857], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [11, 10, 8, -2, -2, 12, -2, -2, -2], "threshold": [0.5, 2.5, 0.5, -2.0, -2.0, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, 6, -1, -1, -1], "right": [8, 5, 4, -1, -1, 7, -1, -1, -1], "value": [[0.575, 0.425], [0.92, 0.08], [0.97777778, 0.02222222], [0.0, 1.0], [1.0, 0.0], [0.4, 0.6], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [12, 1, 0, -2, -2, -2, 2, 0, -2, -2, -2], "threshold": [0.5, 1.5, 28.5, -2.0, -2.0, -2.0, 0.5, 28.5, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, 7, 8, -1, -1, -1], "right": [6, 5, 4, -1, -1, -1, 10, 9, -1, -1, -1], "value": [[0.5375, 0.4625], [0.92857143, 0.07142857], [0.4, 0.6], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0], [0.10526316, 0.89473684], [0.57142857, 0.42857143], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [10, 0, -2, -2, 16, 5, -2, -2, -2], "threshold": [1.5, 29.5, -2.0, -2.0, 0.5, 4.0, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, 5, 6, -1, -1, -1], "right": [4, 3, -1, -1, 8, 7, -1, -1, -1], "value": [[0.4875, 0.5125], [0.07142857, 0.92857143], [1.0, 0.0], [0.0, 1.0], [0.94736842, 0.05263158], [0.94285714, 0.05714286], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [11, 2, 8, -2, -2, -2, -2], "threshold": [0.5, 1.0, 0.5, -2.0, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, -1], "right": [6, 5, 4, -1, -1, -1, -1], "value": [[0.575, 0.425], [0.93877551, 0.06122449], [0.95833333, 0.04166667], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [10, 12, 11, -2, -2, -2, 4, -2, -2], "threshold": [1.5, 0.5, 0.5, -2.0, -2.0, -2.0, 3.5, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, 7, -1, -1], "right": [6, 5, 4, -1, -1, -1, 8, -1, -1], "value": [[0.3625, 0.6375], [0.03921569, 0.96078431], [0.28571429, 0.71428571], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [0.93103448, 0.06896552], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [2, 6, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.5375, 0.4625], [0.95555556, 0.04444444], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [2, 8, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.475, 0.525], [0.97435897, 0.02564103], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [10, 11, 0, -2, -2, -2, -2], "threshold": [1.5, 0.5, 32.5, -2.0, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, -1], "right": [6, 5, 4, -1, -1, -1, -1], "value": [[0.45, 0.55], [0.02222222, 0.97777778], [0.5, 0.5], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [1, 11, 12, -2, -2, -2, -2], "threshold": [1.5, 0.5, 1.5, -2.0, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, -1], "right": [6, 5, 4, -1, -1, -1, -1], "value": [[0.5625, 0.4375], [0.1025641, 0.8974359], [0.57142857, 0.42857143], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [11, 8, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.5125, 0.4875], [0.89130435, 0.10869565], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [0, 12, -2, 8, -2, -2, 11, 0, -2, 1, -2, -2, -2], "threshold": [32.5, 0.5, -2.0, 0.5, -2.0, -2.0, 0.5, 35.5, -2.0, 1.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, 4, -1, -1, 7, 8, -1, 10, -1, -1, -1], "right": [6, 3, -1, 5, -1, -1, 12, 9, -1, 11, -1, -1, -1], "value": [[0.5375, 0.4625], [0.81395349, 0.18604651], [1.0, 0.0], [0.2, 0.8], [0.0, 1.0], [1.0, 0.0], [0.21621622, 0.78378378], [0.88888889, 0.11111111], [1.0, 0.0], [0.83333333, 0.16666667], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [12, 10, 2, -2, -2, -2, 8, -2, 0, -2, -2], "threshold": [0.5, 1.5, 1.0, -2.0, -2.0, -2.0, 0.5, -2.0, 32.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, 7, -1, 9, -1, -1], "right": [6, 5, 4, -1, -1, -1, 8, -1, 10, -1, -1], "value": [[0.45, 0.55], [0.875, 0.125], [0.44444444, 0.55555556], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0], [0.025, 0.975], [0.0, 1.0], [0.5, 0.5], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [15, 12, 11, -2, -2, 11, 1, -2, -2, -2, -2], "threshold": [0.5, 0.5, 0.5, -2.0, -2.0, 0.5, 2.5, -2.0, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, 6, 7, -1, -1, -1, -1], "right": [10, 5, 4, -1, -1, 9, 8, -1, -1, -1, -1], "value": [[0.45, 0.55], [0.43589744, 0.56410256], [0.81578947, 0.18421053], [1.0, 0.0], [0.0, 1.0], [0.075, 0.925], [0.42857143, 0.57142857], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [12, 8, -2, -2, 10, -2, 10, -2, -2], "threshold": [0.5, 0.5, -2.0, -2.0, 1.5, -2.0, 2.5, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, 7, -1, -1], "right": [4, 3, -1, -1, 6, -1, 8, -1, -1], "value": [[0.425, 0.575], [0.96875, 0.03125], [0.0, 1.0], [1.0, 0.0], [0.0625, 0.9375], [0.0, 1.0], [0.6, 0.4], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [8, -2, 1, 0, -2, -2, -2], "threshold": [0.5, -2.0, 1.5, 31.0, -2.0, -2.0, -2.0], "left": [1, -1, 3, 4, -1, -1, -1], "right": [2, -1, 6, 5, -1, -1, -1], "value": [[0.5125, 0.4875], [0.0, 1.0], [0.97619048, 0.02380952], [0.75, 0.25], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [2, 5, -2, -2, -2], "threshold": [0.5, 4.0, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.5125, 0.4875], [0.97619048, 0.02380952], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [10, 11, 4, 12, -2, -2, -2, -2, 1, -2, -2], "threshold": [1.5, 0.5, 3.5, 1.5, -2.0, -2.0, -2.0, -2.0, 2.5, -2.0, -2.0], "left": [1, 2, 3, 4, -1, -1, -1, -1, 9, -1, -1], "right": [8, 7, 6, 5, -1, -1, -1, -1, 10, -1, -1], "value": [[0.4875, 0.5125], [0.0952381, 0.9047619], [0.8, 0.2], [0.75, 0.25], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0], [0.92105263, 0.07894737], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [8, -2, -2], "threshold": [0.5, -2.0, -2.0], "left": [1, -1, -1], "right": [2, -1, -1], "value": [[0.5125, 0.4875], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [5, 11, 8, -2, -2, -2, -2], "threshold": [1.0, 0.5, 0.5, -2.0, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, -1], "right": [6, 5, 4, -1, -1, -1, -1], "value": [[0.4625, 0.5375], [0.48684211, 0.51315789], [0.97368421, 0.02631579], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [2, 5, -2, -2, -2], "threshold": [1.0, 2.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.4875, 0.5125], [0.92857143, 0.07142857], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [2, 10, -2, -2, -2], "threshold": [0.5, 2.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.4375, 0.5625], [0.94594595, 0.05405405], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [8, -2, 10, -2, -2], "threshold": [0.5, -2.0, 1.5, -2.0, -2.0], "left": [1, -1, 3, -1, -1], "right": [2, -1, 4, -1, -1], "value": [[0.45, 0.55], [0.0, 1.0], [0.97297297, 0.02702703], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [5, 8, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.525, 0.475], [0.56756757, 0.43243243], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [10, 8, -2, 0, -2, -2, 10, -2, 6, -2, -2], "threshold": [1.5, 0.5, -2.0, 31.0, -2.0, -2.0, 2.5, -2.0, 0.5, -2.0, -2.0], "left": [1, 2, -1, 4, -1, -1, 7, -1, 9, -1, -1], "right": [6, 3, -1, 5, -1, -1, 8, -1, 10, -1, -1], "value": [[0.5875, 0.4125], [0.08823529, 0.91176471], [0.0, 1.0], [0.75, 0.25], [1.0, 0.0], [0.0, 1.0], [0.95652174, 0.04347826], [1.0, 0.0], [0.33333333, 0.66666667], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [11, 1, 4, 8, -2, -2, -2, -2, -2], "threshold": [0.5, 1.5, 3.5, 0.5, -2.0, -2.0, -2.0, -2.0, -2.0], "left": [1, 2, 3, 4, -1, -1, -1, -1, -1], "right": [8, 7, 6, 5, -1, -1, -1, -1, -1], "value": [[0.5875, 0.4125], [0.97916667, 0.02083333], [0.8, 0.2], [0.66666667, 0.33333333], [0.0, 1.0], [1.0, 0.0], [1.0, 0.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [1, 0, -2, -2, -2], "threshold": [1.5, 28.0, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.4875, 0.5125], [0.02380952, 0.97619048], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [2, 10, -2, 8, -2, -2, -2], "threshold": [0.5, 2.5, -2.0, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, 4, -1, -1, -1], "right": [6, 3, -1, 5, -1, -1, -1], "value": [[0.525, 0.475], [0.95454545, 0.04545455], [1.0, 0.0], [0.33333333, 0.66666667], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [5, 1, 4, -2, -2, -2, -2], "threshold": [0.5, 1.5, 3.5, -2.0, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, -1], "right": [6, 5, 4, -1, -1, -1, -1], "value": [[0.4875, 0.5125], [0.52, 0.48], [0.02702703, 0.97297297], [0.0, 1.0], [1.0, 0.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [11, 5, -2, -2, -2], "threshold": [0.5, 4.0, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.4875, 0.5125], [0.975, 0.025], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [8, -2, -2], "threshold": [0.5, -2.0, -2.0], "left": [1, -1, -1], "right": [2, -1, -1], "value": [[0.4875, 0.5125], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [10, -2, 5, -2, -2], "threshold": [1.5, -2.0, 4.0, -2.0, -2.0], "left": [1, -1, 3, -1, -1], "right": [2, -1, 4, -1, -1], "value": [[0.5875, 0.4125], [0.0, 1.0], [0.94, 0.06], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [2, 6, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.525, 0.475], [0.97674419, 0.02325581], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [1, 0, -2, -2, 6, -2, -2], "threshold": [1.5, 28.5, -2.0, -2.0, 0.5, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, -1], "right": [4, 3, -1, -1, 6, -1, -1], "value": [[0.5625, 0.4375], [0.02941176, 0.97058824], [1.0, 0.0], [0.0, 1.0], [0.95652174, 0.04347826], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [11, 12, -2, 8, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, 4, -1, -1, -1], "right": [6, 3, -1, 5, -1, -1, -1], "value": [[0.575, 0.425], [0.95833333, 0.04166667], [1.0, 0.0], [0.33333333, 0.66666667], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [11, 12, -2, 8, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, 4, -1, -1, -1], "right": [6, 3, -1, 5, -1, -1, -1], "value": [[0.525, 0.475], [0.89361702, 0.10638298], [1.0, 0.0], [0.44444444, 0.55555556], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [12, 0, 16, 8, -2, -2, -2, -2, 0, 12, -2, -2, 8, -2, 11, -2, -2], "threshold": [0.5, 40.0, 0.5, 0.5, -2.0, -2.0, -2.0, -2.0, 30.5, 1.5, -2.0, -2.0, 0.5, -2.0, 0.5, -2.0, -2.0], "left": [1, 2, 3, 4, -1, -1, -1, -1, 9, 10, -1, -1, 13, -1, 15, -1, -1], "right": [8, 7, 6, 5, -1, -1, -1, -1, 12, 11, -1, -1, 14, -1, 16, -1, -1], "value": [[0.4125, 0.5875], [0.91176471, 0.08823529], [0.93939394, 0.06060606], [0.93333333, 0.06666667], [0.0, 1.0], [1.0, 0.0], [1.0, 0.0], [0.0, 1.0], [0.04347826, 0.95652174], [0.33333333, 0.66666667], [0.0, 1.0], [1.0, 0.0], [0.02325581, 0.97674419], [0.0, 1.0], [0.5, 0.5], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [12, 10, 11, -2, -2, -2, 0, -2, 8, -2, -2], "threshold": [0.5, 1.5, 0.5, -2.0, -2.0, -2.0, 33.5, -2.0, 0.5, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, 7, -1, 9, -1, -1], "right": [6, 5, 4, -1, -1, -1, 8, -1, 10, -1, -1], "value": [[0.5625, 0.4375], [0.85714286, 0.14285714], [0.22222222, 0.77777778], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0], [0.09677419, 0.90322581], [0.0, 1.0], [0.2, 0.8], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [1, 2, -2, -2, 5, -2, -2], "threshold": [1.5, 0.5, -2.0, -2.0, 2.5, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, -1], "right": [4, 3, -1, -1, 6, -1, -1], "value": [[0.5, 0.5], [0.07317073, 0.92682927], [1.0, 0.0], [0.0, 1.0], [0.94871795, 0.05128205], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [10, 2, -2, -2, 5, -2, -2], "threshold": [1.5, 0.5, -2.0, -2.0, 4.0, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, -1], "right": [4, 3, -1, -1, 6, -1, -1], "value": [[0.4375, 0.5625], [0.04651163, 0.95348837], [1.0, 0.0], [0.0, 1.0], [0.89189189, 0.10810811], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [10, 2, -2, -2, 4, -2, 8, -2, -2], "threshold": [1.5, 1.0, -2.0, -2.0, 3.5, -2.0, 0.5, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, 7, -1, -1], "right": [4, 3, -1, -1, 6, -1, 8, -1, -1], "value": [[0.5, 0.5], [0.02564103, 0.97435897], [1.0, 0.0], [0.0, 1.0], [0.95121951, 0.04878049], [1.0, 0.0], [0.33333333, 0.66666667], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [5, 12, 8, -2, -2, 10, -2, -2, -2], "threshold": [1.0, 0.5, 0.5, -2.0, -2.0, 1.5, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, 6, -1, -1, -1], "right": [8, 5, 4, -1, -1, 7, -1, -1, -1], "value": [[0.5375, 0.4625], [0.56578947, 0.43421053], [0.86363636, 0.13636364], [0.0, 1.0], [1.0, 0.0], [0.15625, 0.84375], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [12, 1, 8, -2, -2, -2, 8, -2, 10, -2, -2], "threshold": [0.5, 1.5, 0.5, -2.0, -2.0, -2.0, 0.5, -2.0, 1.5, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, 7, -1, 9, -1, -1], "right": [6, 5, 4, -1, -1, -1, 8, -1, 10, -1, -1], "value": [[0.5125, 0.4875], [0.95238095, 0.04761905], [0.5, 0.5], [0.0, 1.0], [1.0, 0.0], [1.0, 0.0], [0.02631579, 0.97368421], [0.0, 1.0], [0.5, 0.5], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [12, 10, 0, -2, -2, -2, 8, -2, 11, -2, -2], "threshold": [0.5, 1.5, 29.5, -2.0, -2.0, -2.0, 0.5, -2.0, 0.5, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, 7, -1, 9, -1, -1], "right": [6, 5, 4, -1, -1, -1, 8, -1, 10, -1, -1], "value": [[0.4625, 0.5375], [0.89189189, 0.10810811], [0.2, 0.8], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0], [0.09302326, 0.90697674], [0.0, 1.0], [0.8, 0.2], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [8, -2, -2], "threshold": [0.5, -2.0, -2.0], "left": [1, -1, -1], "right": [2, -1, -1], "value": [[0.55, 0.45], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [2, 6, -2, -2, -2], "threshold": [1.0, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.4875, 0.5125], [0.975, 0.025], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [8, -2, 1, -2, -2], "threshold": [0.5, -2.0, 1.5, -2.0, -2.0], "left": [1, -1, 3, -1, -1], "right": [2, -1, 4, -1, -1], "value": [[0.475, 0.525], [0.0, 1.0], [0.97435897, 0.02564103], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [6, 1, 0, -2, -2, -2, -2], "threshold": [0.5, 1.5, 28.5, -2.0, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, -1], "right": [6, 5, 4, -1, -1, -1, -1], "value": [[0.6, 0.4], [0.63157895, 0.36842105], [0.03448276, 0.96551724], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [2, 0, 1, -2, -2, 8, -2, -2, -2], "threshold": [0.5, 27.5, 2.5, -2.0, -2.0, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, 6, -1, -1, -1], "right": [8, 5, 4, -1, -1, 7, -1, -1, -1], "value": [[0.525, 0.475], [0.91304348, 0.08695652], [0.57142857, 0.42857143], [1.0, 0.0], [0.0, 1.0], [0.97435897, 0.02564103], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [10, -2, 6, -2, -2], "threshold": [1.5, -2.0, 0.5, -2.0, -2.0], "left": [1, -1, 3, -1, -1], "right": [2, -1, 4, -1, -1], "value": [[0.5, 0.5], [0.0, 1.0], [0.97560976, 0.02439024], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [12, 0, -2, 5, 10, -2, -2, -2, 5, 0, -2, 8, -2, 12, -2, -2, -2], "threshold": [0.5, 30.5, -2.0, 1.5, 1.5, -2.0, -2.0, -2.0, 0.5, 30.5, -2.0, 0.5, -2.0, 2.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, 4, 5, -1, -1, -1, 9, 10, -1, 12, -1, 14, -1, -1, -1], "right": [8, 3, -1, 7, 6, -1, -1, -1, 16, 11, -1, 13, -1, 15, -1, -1, -1], "value": [[0.4375, 0.5625], [0.81578947, 0.18421053], [1.0, 0.0], [0.61111111, 0.38888889], [0.58823529, 0.41176471], [0.0, 1.0], [1.0, 0.0], [1.0, 0.0], [0.0952381, 0.9047619], [0.12121212, 0.87878788], [1.0, 0.0], [0.06451613, 0.93548387], [0.0, 1.0], [0.66666667, 0.33333333], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [2, 5, -2, -2, -2], "threshold": [1.0, 4.0, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.4375, 0.5625], [0.94594595, 0.05405405], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [11, 1, -2, 8, -2, -2, -2], "threshold": [0.5, 2.5, -2.0, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, 4, -1, -1, -1], "right": [6, 3, -1, 5, -1, -1, -1], "value": [[0.4625, 0.5375], [0.88095238, 0.11904762], [1.0, 0.0], [0.28571429, 0.71428571], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [2, 5, -2, -2, -2], "threshold": [0.5, 2.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.4, 0.6], [0.96969697, 0.03030303], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [8, -2, 1, 11, -2, -2, -2], "threshold": [0.5, -2.0, 1.5, 0.5, -2.0, -2.0, -2.0], "left": [1, -1, 3, 4, -1, -1, -1], "right": [2, -1, 6, 5, -1, -1, -1], "value": [[0.4, 0.6], [0.0, 1.0], [0.96969697, 0.03030303], [0.66666667, 0.33333333], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [2, 8, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.4875, 0.5125], [0.90697674, 0.09302326], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [11, 10, 2, -2, -2, 4, -2, 1, -2, -2, -2], "threshold": [0.5, 1.5, 1.0, -2.0, -2.0, 2.5, -2.0, 3.5, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, 6, -1, 8, -1, -1, -1], "right": [10, 5, 4, -1, -1, 7, -1, 9, -1, -1, -1], "value": [[0.475, 0.525], [0.95, 0.05], [0.5, 0.5], [1.0, 0.0], [0.0, 1.0], [0.97368421, 0.02631579], [1.0, 0.0], [0.97142857, 0.02857143], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [0, 2, 10, -2, -2, -2, 8, -2, 10, -2, -2], "threshold": [32.5, 1.0, 2.5, -2.0, -2.0, -2.0, 0.5, -2.0, 1.5, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, 7, -1, 9, -1, -1], "right": [6, 5, 4, -1, -1, -1, 8, -1, 10, -1, -1], "value": [[0.525, 0.475], [0.88888889, 0.11111111], [0.96969697, 0.03030303], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [0.22727273, 0.77272727], [0.0, 1.0], [0.90909091, 0.09090909], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [8, -2, 1, 4, 0, -2, -2, -2, -2], "threshold": [0.5, -2.0, 1.5, 3.5, 30.0, -2.0, -2.0, -2.0, -2.0], "left": [1, -1, 3, 4, 5, -1, -1, -1, -1], "right": [2, -1, 8, 7, 6, -1, -1, -1, -1], "value": [[0.4625, 0.5375], [0.0, 1.0], [0.97368421, 0.02631579], [0.75, 0.25], [0.5, 0.5], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 0.0]]}, {"feature": [11, 12, -2, 0, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, 29.0, -2.0, -2.0, -2.0], "left": [1, 2, -1, 4, -1, -1, -1], "right": [6, 3, -1, 5, -1, -1, -1], "value": [[0.5375, 0.4625], [0.97727273, 0.02272727], [1.0, 0.0], [0.88888889, 0.11111111], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [10, 0, -2, -2, 5, -2, -2], "threshold": [1.5, 28.0, -2.0, -2.0, 4.0, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, -1], "right": [4, 3, -1, -1, 6, -1, -1], "value": [[0.4375, 0.5625], [0.02272727, 0.97727273], [1.0, 0.0], [0.0, 1.0], [0.94444444, 0.05555556], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [12, 1, 4, 8, -2, -2, -2, -2, 1, -2, 6, -2, -2], "threshold": [0.5, 1.5, 3.5, 0.5, -2.0, -2.0, -2.0, -2.0, 1.5, -2.0, 0.5, -2.0, -2.0], "left": [1, 2, 3, 4, -1, -1, -1, -1, 9, -1, 11, -1, -1], "right": [8, 7, 6, 5, -1, -1, -1, -1, 10, -1, 12, -1, -1], "value": [[0.5, 0.5], [0.90697674, 0.09302326], [0.42857143, 0.57142857], [0.2, 0.8], [0.0, 1.0], [1.0, 0.0], [1.0, 0.0], [1.0, 0.0], [0.02702703, 0.97297297], [0.0, 1.0], [0.2, 0.8], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [15, 8, -2, 2, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, 1.0, -2.0, -2.0, -2.0], "left": [1, 2, -1, 4, -1, -1, -1], "right": [6, 3, -1, 5, -1, -1, -1], "value": [[0.45, 0.55], [0.44303797, 0.55696203], [0.0, 1.0], [0.94594595, 0.05405405], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [15, 2, 8, -2, -2, -2, -2], "threshold": [0.5, 0.5, 0.5, -2.0, -2.0, -2.0, -2.0], "left": [1, 2, 3, -1, -1, -1, -1], "right": [6, 5, 4, -1, -1, -1, -1], "value": [[0.5, 0.5], [0.47368421, 0.52631579], [0.97297297, 0.02702703], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [8, -2, 0, -2, 11, -2, -2], "threshold": [0.5, -2.0, 33.5, -2.0, 0.5, -2.0, -2.0], "left": [1, -1, 3, -1, 5, -1, -1], "right": [2, -1, 4, -1, 6, -1, -1], "value": [[0.5125, 0.4875], [0.0, 1.0], [0.97619048, 0.02380952], [1.0, 0.0], [0.75, 0.25], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [2, 8, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.475, 0.525], [0.95, 0.05], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [8, -2, -2], "threshold": [0.5, -2.0, -2.0], "left": [1, -1, -1], "right": [2, -1, -1], "value": [[0.425, 0.575], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [8, -2, -2], "threshold": [0.5, -2.0, -2.0], "left": [1, -1, -1], "right": [2, -1, -1], "value": [[0.5375, 0.4625], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [8, -2, -2], "threshold": [0.5, -2.0, -2.0], "left": [1, -1, -1], "right": [2, -1, -1], "value": [[0.5375, 0.4625], [0.0, 1.0], [1.0, 0.0]]}, {"feature": [2, 1, -2, -2, -2], "threshold": [0.5, 3.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.575, 0.425], [0.9787234, 0.0212766], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [2, 12, -2, 6, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, 4, -1, -1, -1], "right": [6, 3, -1, 5, -1, -1, -1], "value": [[0.6, 0.4], [0.97959184, 0.02040816], [1.0, 0.0], [0.83333333, 0.16666667], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [15, 8, -2, 1, 4, 0, -2, -2, -2, -2, -2], "threshold": [0.5, 0.5, -2.0, 1.5, 3.5, 30.0, -2.0, -2.0, -2.0, -2.0, -2.0], "left": [1, 2, -1, 4, 5, 6, -1, -1, -1, -1, -1], "right": [10, 3, -1, 9, 8, 7, -1, -1, -1, -1, -1], "value": [[0.425, 0.575], [0.41025641, 0.58974359], [0.0, 1.0], [0.96969697, 0.03030303], [0.66666667, 0.33333333], [0.5, 0.5], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 0.0], [1.0, 0.0]]}, {"feature": [2, 12, -2, 6, -2, -2, -2], "threshold": [1.0, 0.5, -2.0, 0.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, 4, -1, -1, -1], "right": [6, 3, -1, 5, -1, -1, -1], "value": [[0.5125, 0.4875], [0.93181818, 0.06818182], [1.0, 0.0], [0.4, 0.6], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [12, 1, -2, -2, 1, -2, 10, -2, -2], "threshold": [0.5, 1.5, -2.0, -2.0, 1.5, -2.0, 2.5, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, 7, -1, -1], "right": [4, 3, -1, -1, 6, -1, 8, -1, -1], "value": [[0.5125, 0.4875], [0.9047619, 0.0952381], [0.0, 1.0], [1.0, 0.0], [0.07894737, 0.92105263], [0.0, 1.0], [0.75, 0.25], [1.0, 0.0], [0.0, 1.0]]}, {"feature": [2, 5, -2, -2, -2], "threshold": [0.5, 5.5, -2.0, -2.0, -2.0], "left": [1, 2, -1, -1, -1], "right": [4, 3, -1, -1, -1], "value": [[0.475, 0.525], [0.97435897, 0.02564103], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]]}, {"feature": [1, 0, -2, -2, 8, -2, -2], "threshold": [1.5, 29.0, -2.0, -2.0, 0.5, -2.0, -2.0], "left": [1, 2, -1, -1, 5, -1, -1], "right": [4, 3, -1, -1, 6, -1, -1], "value": [[0.4625, 0.5375], [0.11111111, 0.88888889], [1.0, 0.0], [0.0, 1.0], [0.91428571, 0.08571429], [0.0, 1.0], [1.0, 0.0]]}]}, "naive_bayes": {"classes": [0, 1], "class_log_prior": [-0.6931471806, -0.6931471806], "feature_log_prob": [[-6.7813911855, -6.7813911855, -6.7813911855, -6.3309214618, -6.7813911855, -6.7813911855, -6.5045397754, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4833936356, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4898344721, -6.7813911855, -6.7813911855, -6.491387397, -6.491387397, -6.7813911855, -6.7813911855, -6.5366034894, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4832573229, -6.4832573229, -6.4574971176, -6.4574971176, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.491387397, -6.491387397, -6.7813911855, -6.7813911855, -6.4419900378, -6.4419900378, -6.3006231954, -6.7813911855, -6.4898344721, -6.4552856865, -6.4536452428, -6.4536452428, -6.400335242, -6.400335242, -6.4117511361, -6.4117511361, -6.491387397, -6.491387397, -6.4574971176, -6.513119523, -6.513119523, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4890053024, -6.4890053024, -6.7813911855, -6.7813911855, -6.4898344721, -6.4898344721, -6.4117511361, -6.4117511361, -6.7813911855, -6.7813911855, -6.7813911855, -6.4536452428, -6.4536452428, -6.7813911855, -6.7813911855, -6.2678519291, -6.4832573229, -6.4541005546, -6.491387397, -6.491387397, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.5694357311, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4833936356, -6.7813911855, -6.7813911855, -6.7813911855, -6.4898344721, -6.4898344721, -6.4865601055, -6.4865601055, -6.4886873149, -6.4886873149, -6.7813911855, -6.7813911855, -6.4890053024, -6.4890053024, -6.4541005546, -6.4536452428, -6.4536452428, -6.7813911855, -6.7813911855, -6.4937091131, -6.4029869219, -6.4029869219, -6.5133378795, -6.491387397, -6.7813911855, -6.10750729, -6.4552856865, -6.4898344721, -6.4419900378, -6.1860756972, -6.7813911855, -6.3023623115, -6.7813911855, -6.4477389477, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4029869219, -6.4029869219, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.491387397, -6.491387397, -6.7813911855, -6.7813911855, -6.4501165614, -6.4501165614, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4898344721, -6.4898344721, -6.4505499121, -6.7813911855, -6.4029869219, -6.7813911855, -6.491387397, -6.491387397, -6.7813911855, -6.7813911855, -6.5074183208, -6.513119523, -6.513119523, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.5045397754, -6.5045397754, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4784683346, -6.4541005546, -6.7813911855, -6.4029869219, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4886873149, -6.491387397, -6.7813911855, -6.7813911855, -6.491387397, -6.491387397, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4501165614, -6.4501165614, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4898344721, -6.4898344721, -6.5366034894, -6.5366034894, -6.7813911855, -6.7813911855, -6.5045397754, -6.5045397754, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -5.9591291817, -6.4886873149, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.491387397, -6.491387397, -6.4541005546, -6.4541005546, -6.4477389477, -6.7813911855, -6.7813911855, -6.7813911855, -6.4816481731, -6.4574971176, -6.7813911855, -6.5074183208, -6.5074183208, -6.5088283091, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4552856865, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.491387397, -6.491387397, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.513119523, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4117511361, -6.4117511361, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4552856865, -6.4552856865, -6.2764254254, -6.491387397, -6.4574971176, -6.7813911855, -6.7813911855, -6.7813911855, -6.4117511361, -6.4117511361, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4541005546, -6.4541005546, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4833936356, -6.4833936356, -6.4541005546, -6.4541005546, -6.7813911855, -6.7813911855, -6.4574971176, -6.4937091131, -6.4937091131, -6.3124345743, -6.4890053024, -6.5074183208, -6.104731304, -6.5045397754, -6.3935151234, -6.4874113736, -6.4784683346, -6.7813911855, -6.4541005546, -6.7813911855, -6.7813911855, -6.491387397, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4898344721, -6.4898344721, -6.2967112332, -6.4865601055, -6.7813911855, -6.7813911855, -6.7813911855, -6.0488268854, -6.4574971176, -6.4574971176, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.513119523, -6.513119523, -6.4937091131, -6.4937091131, -6.3935151234, -6.7813911855, -6.7813911855, -6.5058694719, -6.4833936356, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.3148369336, -6.513119523, -6.4865601055, -6.7813911855, -6.7813911855, -6.4536452428, -6.4536452428, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4874113736, -6.4874113736, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.5133378795, -6.7813911855, -6.491387397, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4552856865, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.5366034894, -6.5366034894, -6.4832573229, -6.4832573229, -6.2762312141, -6.5074183208, -6.4898344721, -6.4898344721, -6.7813911855, -6.7813911855, -6.7813911855, -6.5484275706, -6.513119523, -6.7813911855, -6.7813911855, -6.4574971176, -6.7813911855, -6.7813911855, -6.491387397, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.2825168182, -6.4501165614, -6.5074183208, -6.3023623115, -6.7813911855, -6.7813911855, -6.5366034894, -6.5366034894, -6.4065345175, -6.4065345175, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4117511361, -6.7813911855, -6.7813911855, -6.4886873149, -6.4886873149, -6.7813911855, -6.7813911855, -6.4865601055, -6.4865601055, -6.4574971176, -6.4574971176, -6.4029869219, -6.4029869219, -6.4784683346, -6.7813911855, -6.4541005546, -6.2131997251, -6.4065345175, -6.4574971176, -6.4937091131, -6.4937091131, -6.4552856865, -6.4552856865, -6.7813911855, -6.7813911855, -6.4552856865, -6.4552856865, -6.7813911855, -6.7813911855, -6.7813911855, -6.4552856865, -6.4552856865, -6.7813911855, -6.7813911855, -6.4065345175, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4029869219, -6.4029869219, -6.4874113736, -6.7813911855, -6.7813911855, -6.2734935289, -6.4874113736, -6.4574971176, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4574971176, -6.4574971176, -6.4420770065, -6.7813911855, -6.3935151234, -6.7813911855, -6.4536452428, -6.4536452428, -6.7813911855, -6.7813911855, -6.4574971176, -6.4574971176, -6.4536452428, -6.4536452428, -6.4287363157, -6.7813911855, -6.4010729618, -6.5366034894, -6.5366034894, -6.7813911855, -6.7813911855, -6.7813911855, -6.4574971176, -6.4574971176, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4541005546, -6.4890053024, -6.4890053024, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.400335242, -6.400335242, -6.4029869219, -6.4029869219, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4833936356, -6.4833936356, -6.4874113736, -6.4874113736, -6.1365223153, -6.4832573229, -6.4477389477, -6.5045397754, -6.4937091131, -6.4937091131, -6.2066616119, -6.4541005546, -6.4010729618, -6.4574971176, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.1473687623, -6.2762312141, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4574971176, -6.4574971176, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4574971176, -6.4574971176, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4010729618, -6.7813911855, -6.7813911855, -6.5366034894, -6.5366034894, -6.4117511361, -6.4541005546, -6.5366034894, -6.5366034894, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4477389477, -6.4477389477, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.7813911855, -6.4784683346, -6.4541005546, -6.7813911855, -6.4886873149, -6.4886873149, -6.7813911855, -6.7813911855, -6.4898344721, -6.7813911855, -6.7813911855], [-6.4766131516, -6.6406270453, -6.6406270453, -6.5360817956, -6.6275372915, -6.6520672692, -6.8369226072, -6.6475823776, -6.6475823776, -6.6513823599, -6.6513823599, -6.5177369246, -6.5177369246, -6.6202108382, -6.6202108382, -6.8369226072, -6.6340493422, -6.6340493422, -6.5099232179, -6.6475823776, -6.6422962302, -6.8369226072, -6.6202108382, -6.6202108382, -6.8369226072, -6.8369226072, -6.6401204428, -6.6401204428, -6.8369226072, -6.2518362458, -6.6094125624, -6.6353184433, -6.6075187889, -6.6130156983, -6.4695522203, -6.6364613108, -6.6364613108, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6215470844, -6.6215470844, -6.6075187889, -6.6075187889, -6.6075187889, -6.6075187889, -6.8369226072, -6.8369226072, -6.6415898814, -6.6415898814, -6.8369226072, -6.8369226072, -6.6528440605, -6.6241833768, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.1634028559, -6.6179974981, -6.5901564592, -6.460334168, -6.6306150549, -6.4806344476, -6.6130156983, -6.6401532158, -6.8369226072, -6.8369226072, -6.6010071552, -6.6010071552, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.4736836562, -6.6389001961, -6.6389001961, -6.8369226072, -6.8369226072, -6.6010071552, -6.6010071552, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.4467806635, -6.6229447501, -6.6229447501, -6.0064456363, -6.6215470844, -6.6315981965, -6.6401532158, -6.6364613108, -6.6229218402, -6.6446290509, -6.6215470844, -6.6241833768, -6.6306150549, -6.6306150549, -6.6306150549, -6.6306150549, -6.0692003148, -6.6275372915, -6.6275372915, -6.0963538966, -6.6520672692, -6.6004824828, -6.3902281525, -6.6406270453, -6.6010071552, -6.8369226072, -6.489371358, -6.6513823599, -6.6130156983, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6389001961, -6.6389001961, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6105189839, -6.6105189839, -6.8369226072, -6.8369226072, -6.8369226072, -6.6383992929, -6.8369226072, -6.6215470844, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.5281605221, -6.627940529, -6.8369226072, -6.6406270453, -6.8369226072, -6.6281277293, -6.6281277293, -6.6215470844, -6.6215470844, -6.6202792294, -6.6202792294, -6.3502013254, -6.4930800705, -6.6241833768, -6.8369226072, -6.8369226072, -6.4692133287, -6.6362610718, -6.6362610718, -6.6224426347, -6.6224426347, -6.6398109977, -6.6398109977, -6.6275372915, -6.6275372915, -6.8369226072, -6.8369226072, -6.6094125624, -6.6094125624, -6.8369226072, -6.8369226072, -6.6353184433, -6.6353184433, -6.6215470844, -6.6215470844, -6.6179974981, -6.6179974981, -6.4242219761, -6.6094314628, -6.6094314628, -6.8369226072, -6.8369226072, -6.5323365043, -6.6544544327, -6.8369226072, -6.6401532158, -6.8369226072, -6.8369226072, -6.5901564592, -6.5901564592, -6.8369226072, -6.8369226072, -6.8369226072, -6.6415898814, -6.6415898814, -6.4596770612, -6.6306150549, -6.6306150549, -6.8369226072, -6.8369226072, -6.6105189839, -6.6105189839, -6.5001990391, -6.6544544327, -6.6544544327, -6.3720935661, -6.6398109977, -6.6422962302, -6.6422962302, -6.4487207184, -6.6224426347, -6.5901564592, -6.6351003056, -6.8369226072, -6.6179974981, -6.8369226072, -6.6281277293, -6.6281277293, -6.6043261664, -6.6043261664, -6.8369226072, -6.8369226072, -6.4788080901, -6.4788080901, -6.8369226072, -6.8369226072, -6.6364613108, -6.6364613108, -6.6401204428, -6.6401204428, -6.6446290509, -6.6446290509, -6.8369226072, -6.8369226072, -6.6094314628, -6.6094314628, -6.6094314628, -6.6094314628, -6.6406270453, -6.6406270453, -6.2493679502, -6.6362610718, -6.641919534, -6.6362610718, -6.641919534, -6.6241833768, -6.6241833768, -6.4157519639, -6.6043261664, -6.6043261664, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6215470844, -6.6215470844, -6.8369226072, -6.8369226072, -5.5455280106, -6.6010071552, -6.6010071552, -6.6389001961, -6.6202792294, -6.6275372915, -6.6389001961, -6.4613349489, -6.6202792294, -6.4949389418, -6.4654732387, -6.6004824828, -6.6229218402, -6.6229218402, -6.6004824828, -6.8369226072, -6.8369226072, -6.6275372915, -6.6275372915, -6.6353184433, -6.6353184433, -5.9827640673, -6.4613349489, -6.6315981965, -6.6315981965, -6.4796635228, -6.6010071552, -6.6513823599, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.444977222, -6.621868936, -6.621868936, -6.652065622, -6.8369226072, -6.6362610718, -6.8369226072, -6.8369226072, -6.5213344001, -6.6520672692, -6.6520672692, -6.6422962302, -6.6422962302, -6.5177369246, -6.6520672692, -6.6475823776, -6.8369226072, -5.3708458833, -6.6075187889, -6.6389001961, -6.6229447501, -6.6215470844, -6.6275372915, -6.6241833768, -6.6362610718, -6.6094314628, -6.6306150549, -6.641919534, -6.6406270453, -6.6043261664, -6.1190927941, -6.621868936, -6.6520672692, -6.6415898814, -6.6475823776, -6.6353184433, -6.6544544327, -6.6202108382, -6.6398109977, -6.6401532158, -6.6401204428, -6.5901564592, -6.6281277293, -6.6446290509, -6.6229218402, -6.6364613108, -6.6179974981, -6.6130156983, -6.6224426347, -6.6105189839, -6.6422962302, -6.6094125624, -6.627940529, -6.2728526889, -6.6353184433, -6.6179974981, -6.4776016962, -6.8369226072, -6.8369226072, -6.6105189839, -6.6105189839, -6.6229447501, -6.6229447501, -6.478248077, -6.6415898814, -6.6415898814, -6.2378426087, -6.6202792294, -6.4720891991, -6.6229447501, -6.8369226072, -6.4884483499, -6.6475823776, -6.6475823776, -6.6422962302, -6.6422962302, -6.8369226072, -6.8369226072, -6.4949389418, -6.6513823599, -6.6513823599, -6.4752283371, -6.6398109977, -6.6398109977, -6.6475823776, -6.6475823776, -6.4676186214, -6.6353184433, -6.6353184433, -6.6520672692, -6.6520672692, -6.621868936, -6.621868936, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.4696231364, -6.6389001961, -6.6004824828, -6.8369226072, -6.8369226072, -6.3879197304, -6.6389001961, -6.6202792294, -6.6513823599, -6.6130156983, -6.6130156983, -6.8369226072, -6.8369226072, -6.478248077, -6.6415898814, -6.6415898814, -6.6075187889, -6.6075187889, -6.6401204428, -6.6401204428, -6.3806370308, -6.5001990391, -6.627940529, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6224426347, -6.6224426347, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6396767694, -6.6229218402, -6.8369226072, -6.6275372915, -6.6275372915, -6.8369226072, -6.6415898814, -6.6415898814, -5.8536680136, -6.6544544327, -6.6544544327, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.442200234, -6.6202108382, -6.6202108382, -6.8369226072, -6.8369226072, -6.8369226072, -6.6275372915, -6.6275372915, -6.4752283371, -6.6398109977, -6.6398109977, -6.4902383726, -6.4902383726, -6.6306150549, -6.6306150549, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6401532158, -6.6401532158, -6.6689436465, -6.8369226072, -6.6544544327, -6.4983793148, -6.6513823599, -6.6241833768, -6.8369226072, -6.8369226072, -6.8369226072, -6.641919534, -6.641919534, -6.8369226072, -6.8369226072, -6.6275372915, -6.6275372915, -6.4870068169, -6.6094314628, -6.6520672692, -6.4758089777, -6.6401532158, -6.6401532158, -6.6362610718, -6.6362610718, -6.8369226072, -6.8369226072, -6.4757533658, -6.6401204428, -6.6401204428, -6.0806160483, -6.44910634, -6.6224426347, -6.6362610718, -6.641919534, -6.5901564592, -6.6392314872, -6.6224426347, -6.8369226072, -6.460334168, -6.460334168, -6.4636458238, -6.4636458238, -6.8369226072, -6.6415898814, -6.6415898814, -6.4554876267, -6.6281277293, -6.6281277293, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.4834159091, -6.6446290509, -6.6446290509, -6.4927728225, -6.8369226072, -6.621868936, -6.6202792294, -6.8369226072, -6.6281277293, -6.6281277293, -6.8369226072, -6.6241833768, -6.6241833768, -6.3336628892, -6.6229218402, -6.6229218402, -6.6229447501, -6.3616025743, -6.4930862536, -6.6406270453, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6475823776, -6.6475823776, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6202108382, -6.6202108382, -6.4654732387, -6.6340493422, -6.6340493422, -6.4834159091, -6.6446290509, -6.6446290509, -6.8369226072, -6.6389001961, -6.6389001961, -6.8369226072, -6.8369226072, -6.6362610718, -6.6362610718, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6468233039, -6.6306150549, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6094314628, -6.6094314628, -6.8369226072, -6.8369226072, -6.4757533658, -6.6401204428, -6.6401204428, -6.8369226072, -6.8369226072, -6.6043261664, -6.6043261664, -6.8369226072, -6.6446290509, -6.6446290509, -6.145015136, -6.6520672692, -6.6475823776, -6.6202108382, -6.6340493422, -6.5099232179, -6.8369226072, -6.8369226072, -6.8369226072, -6.6105189839, -6.6105189839, -6.8369226072, -6.8369226072, -6.8369226072, -6.6389001961, -6.6389001961, -6.4952106362, -6.6315981965, -6.6398109977, -6.8369226072, -6.8369226072, -6.5226657149, -6.6544544327, -6.8369226072, -6.6275372915, -6.8369226072, -6.8369226072, -6.6010071552, -6.6010071552, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6553606373, -6.6398109977, -6.8369226072, -6.8369226072, -6.8369226072, -6.4695522203, -6.6364613108, -6.6364613108, -6.8369226072, -6.8369226072, -6.6202792294, -6.6202792294, -6.6004824828, -6.6004824828, -6.8369226072, -6.8369226072, -6.8369226072, -6.6004824828, -6.6004824828, -6.4384981549, -6.6179974981, -6.6179974981, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6130156983, -6.6130156983, -6.6306150549, -6.6306150549, -6.6130156983, -6.6130156983, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6513823599, -6.6513823599, -5.8379431725, -6.1299714369, -6.627940529, -6.4974354617, -6.6446290509, -6.627940529, -6.6364613108, -6.8369226072, -6.8369226072, -6.6224426347, -6.6224426347, -6.6202108382, -6.6202108382, -6.6229218402, -6.6229218402, -6.3659720873, -6.6401532158, -6.4984468997, -6.6179974981, -6.6179974981, -6.8369226072, -6.8369226072, -6.0720718545, -6.6130156983, -6.621868936, -6.621868936, -6.6401204428, -6.6224426347, -6.6224426347, -6.6215470844, -6.6215470844, -6.6353184433, -6.6353184433, -6.6340493422, -6.6340493422, -6.4958558577, -6.6315981965, -6.6406270453, -6.8369226072, -6.8369226072, -5.9952230977, -6.6364613108, -6.6075187889, -6.4566058314, -6.6075187889, -6.6353184433, -6.6094125624, -6.4260299354, -6.6105189839, -6.6105189839, -6.8369226072, -6.6004824828, -6.6004824828, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.8369226072, -6.6422962302, -6.6422962302, -6.6422962302, -6.6422962302, -6.4241905664, -6.6094125624, -6.6094125624, -6.5020949282, -6.5020949282, -6.4551726111, -6.4551726111, -6.8369226072, -6.8369226072, -6.3144541865, -6.6406270453, -6.6520672692, -6.6544544327, -6.6281277293, -6.6576669115, -6.8369226072, -6.6422962302, -6.8369226072, -6.8369226072, -6.6520672692, -6.6520672692, -6.8369226072, -6.6241833768, -6.6241833768]], "vocabulary": {"confirm": 143, "attendance": 63, "annual": 47, "day": 175, "event": 231, "confirm attendance": 144, "attendance annual": 64, "annual day": 48, "day event": 176, "dear": 181, "user": 717, "verify": 726, "kyc": 387, "immediately": 354, "account": 29, "frozen": 287, "http": 318, "update": 701, "tk": 686, "dear user": 182, "user verify": 718, "verify kyc": 731, "kyc immediately": 388, "immediately account": 355, "account frozen": 31, "frozen http": 288, "http kyc": 336, "kyc update": 389, "update tk": 703, "won": 758, "holiday": 309, "package": 490, "worth": 768, "rs": 605, "10": 3, "lakh": 390, "claim": 115, "24": 11, "hours": 314, "win": 752, "ga": 289, "won holiday": 760, "holiday package": 310, "package worth": 492, "worth rs": 769, "rs 10": 606, "10 lakh": 5, "lakh claim": 391, "claim 24": 116, "24 hours": 12, "hours http": 315, "http holiday": 333, "holiday win": 311, "win ga": 753, "free": 268, "bitcoin": 78, "giveaway": 293, "share": 632, "btc": 89, "free bitcoin": 269, "bitcoin giveaway": 79, "giveaway claim": 294, "claim share": 120, "share http": 633, "http free": 331, "free btc": 270, "btc ga": 90, "pre": 541, "approved": 53, "credit": 161, "card": 99, "zero": 771, "fees": 255, "offer": 478, "pre approved": 542, "approved credit": 54, "credit card": 162, "card zero": 107, "zero fees": 772, "fees http": 256, "http credit": 324, "credit offer": 163, "offer ga": 480, "appointment": 51, "confirmed": 146, "tomorrow": 693, "pm": 526, "appointment confirmed": 52, "confirmed tomorrow": 149, "tomorrow pm": 694, "thanks": 680, "email": 222, "ll": 410, "soon": 652, "thanks email": 681, "email ll": 223, "ll soon": 411, "send": 626, "message": 441, "friends": 285, "data": 173, "pack": 488, "chain": 113, "msg": 459, "cf": 112, "send message": 629, "message 10": 442, "10 friends": 4, "friends free": 286, "free data": 273, "data pack": 174, "pack http": 489, "http chain": 323, "chain msg": 114, "msg cf": 460, "don": 208, "forget": 266, "team": 674, "meeting": 434, "don forget": 209, "forget team": 267, "team meeting": 677, "meeting 10": 435, "10 tomorrow": 6, "congratulations": 150, "ve": 721, "000": 0, "prize": 547, "fake": 248, "ml": 446, "congratulations ve": 153, "ve won": 723, "won 000": 759, "000 000": 1, "000 claim": 2, "claim prize": 119, "prize http": 548, "http fake": 329, "fake prize": 249, "prize ml": 549, "notes": 472, "send meeting": 628, "meeting notes": 436, "attached": 61, "invoice": 377, "reference": 568, "attached invoice": 62, "invoice reference": 378, "portfolio": 538, "photo": 519, "contest": 155, "entry": 226, "portfolio photo": 539, "photo contest": 520, "contest entry": 156, "entry won": 227, "won prize": 762, "http photo": 343, "photo win": 521, "computer": 138, "infected": 360, "virus": 733, "download": 210, "scan": 614, "computer infected": 139, "infected virus": 361, "virus download": 734, "download http": 211, "http virus": 350, "virus scan": 735, "scan tk": 615, "return": 600, "errors": 228, "fix": 257, "avoid": 68, "penalty": 512, "return errors": 601, "errors fix": 229, "fix avoid": 258, "avoid penalty": 71, "penalty http": 513, "http fix": 330, "fix ml": 259, "gym": 298, "membership": 438, "renewal": 581, "week": 742, "gym membership": 299, "membership renewal": 440, "renewal week": 583, "received": 560, "money": 453, "transfer": 697, "25000": 13, "accept": 22, "received money": 561, "money transfer": 455, "transfer rs": 698, "rs 25000": 608, "25000 accept": 14, "accept http": 23, "http money": 338, "money tk": 454, "conference": 141, "details": 192, "emailed": 225, "conference details": 142, "details emailed": 194, "salary": 611, "credited": 164, "month": 456, "salary credited": 612, "credited month": 165, "car": 96, "insurance": 367, "premium": 543, "pay": 503, "ins": 362, "car insurance": 98, "insurance premium": 370, "premium pay": 546, "pay avoid": 504, "http car": 321, "car ins": 97, "ins ml": 363, "sim": 643, "expire": 236, "today": 687, "active": 34, "sim card": 645, "card expire": 103, "expire today": 237, "today verify": 692, "verify active": 727, "active http": 36, "http sim": 346, "sim active": 644, "active cf": 35, "monthly": 457, "report": 584, "shared": 634, "managers": 428, "monthly report": 458, "report shared": 586, "shared managers": 635, "ready": 558, "review": 602, "report ready": 585, "ready review": 559, "office": 481, "remain": 575, "closed": 127, "monday": 451, "office remain": 483, "remain closed": 576, "closed monday": 128, "monday holiday": 452, "building": 91, "activity": 37, "planned": 524, "team building": 675, "building activity": 92, "activity planned": 38, "planned month": 525, "maintenance": 424, "work": 763, "completed": 135, "maintenance work": 425, "work building": 764, "building completed": 93, "covid": 159, "policy": 533, "limited": 404, "slots": 648, "free covid": 272, "covid insurance": 160, "insurance policy": 369, "policy limited": 536, "limited slots": 406, "slots http": 649, "free insurance": 276, "insurance cf": 368, "library": 402, "books": 82, "wednesday": 741, "library books": 403, "books wednesday": 83, "electricity": 219, "pending": 514, "disconnection": 198, "electricity pending": 221, "pending pay": 515, "avoid disconnection": 70, "disconnection http": 199, "http pay": 342, "pay ml": 508, "instant": 364, "personal": 517, "loan": 412, "documents": 203, "apply": 49, "minutes": 444, "instant personal": 366, "personal loan": 518, "loan documents": 413, "documents apply": 204, "apply minutes": 50, "minutes http": 445, "http instant": 334, "instant loan": 365, "loan ml": 414, "selected": 621, "gift": 290, "ve selected": 722, "selected free": 622, "free gift": 275, "gift card": 291, "card claim": 101, "claim http": 118, "gift cf": 292, "cut": 169, "tonight": 695, "make": 426, "urgent": 708, "payment": 509, "electricity cut": 220, "cut tonight": 170, "tonight make": 696, "make urgent": 427, "urgent payment": 714, "payment http": 510, "http urgent": 349, "urgent pay": 713, "pay cf": 505, "breakfast": 87, "served": 630, "complimentary": 136, "breakfast served": 88, "served complimentary": 631, "complimentary 10": 137, "bank": 73, "suspended": 664, "click": 122, "suspicious": 668, "link": 408, "urgent bank": 709, "bank account": 74, "account suspended": 33, "suspended click": 665, "click verify": 124, "verify http": 729, "http suspicious": 348, "suspicious link": 669, "link tk": 409, "amazon": 45, "locked": 415, "amaz0n": 43, "amazon account": 46, "account locked": 32, "locked verify": 416, "verify immediately": 730, "immediately http": 357, "http amaz0n": 319, "amaz0n verify": 44, "verify ga": 728, "hi": 307, "meet": 431, "project": 550, "discussion": 200, "hi meet": 308, "meet tomorrow": 433, "pm project": 527, "project discussion": 552, "reminder": 577, "vendor": 724, "scheduled": 616, "thursday": 683, "reminder vendor": 578, "vendor scheduled": 725, "scheduled thursday": 618, "whatsapp": 749, "deactivated": 177, "whatsapp account": 750, "account deactivated": 30, "deactivated verify": 178, "http whatsapp": 352, "whatsapp verify": 751, "verify tk": 732, "health": 301, "lapse": 392, "urgent health": 710, "health insurance": 302, "policy lapse": 535, "lapse http": 393, "http health": 332, "health urgent": 303, "urgent ml": 711, "restaurant": 598, "reservation": 593, "people": 516, "restaurant reservation": 599, "reservation confirmed": 594, "confirmed people": 147, "lecture": 396, "slides": 646, "uploaded": 706, "portal": 537, "lecture slides": 398, "slides uploaded": 647, "uploaded portal": 707, "lucky": 419, "winner": 754, "congratulations lucky": 151, "lucky winner": 421, "winner today": 755, "today claim": 688, "http winner": 353, "today tk": 691, "recharge": 562, "500": 16, "users": 719, "free recharge": 278, "recharge rs": 563, "rs 500": 609, "500 users": 17, "users today": 720, "today http": 689, "recharge tk": 564, "storage": 657, "upgrade": 704, "deletion": 185, "email storage": 224, "storage upgrade": 659, "upgrade immediately": 705, "immediately avoid": 356, "avoid deletion": 69, "deletion http": 186, "http storage": 347, "storage cf": 658, "medical": 429, "test": 678, "reports": 587, "normal": 470, "concerns": 140, "medical test": 430, "test reports": 679, "reports normal": 588, "normal concerns": 471, "submit": 660, "assignment": 59, "friday": 283, "submit assignment": 661, "assignment friday": 60, "parcel": 496, "held": 304, "customs": 166, "fee": 250, "release": 573, "parcel held": 497, "held customs": 306, "customs pay": 168, "pay fee": 506, "fee release": 253, "release http": 574, "http customs": 325, "customs fee": 167, "fee ml": 251, "sports": 653, "begin": 76, "coming": 133, "sports meet": 654, "meet begin": 432, "begin coming": 77, "coming monday": 134, "seats": 619, "left": 399, "coding": 131, "bootcamp": 84, "register": 569, "limited seats": 405, "seats left": 620, "left free": 400, "free coding": 271, "coding bootcamp": 132, "bootcamp register": 86, "register http": 570, "http bootcamp": 320, "bootcamp free": 85, "free ga": 274, "canteen": 94, "accepts": 24, "digital": 196, "methods": 443, "canteen accepts": 95, "accepts digital": 25, "digital payment": 197, "payment methods": 511, "mystery": 461, "shopping": 638, "job": 382, "earn": 215, "daily": 171, "selected mystery": 623, "mystery shopping": 463, "shopping job": 639, "job earn": 383, "earn daily": 216, "daily http": 172, "http mystery": 339, "mystery job": 462, "job ga": 384, "password": 500, "expired": 238, "reset": 595, "lose": 417, "access": 26, "urgent password": 712, "password expired": 501, "expired reset": 239, "reset lose": 596, "lose access": 418, "access http": 27, "http password": 341, "password reset": 502, "reset ml": 597, "parent": 498, "teacher": 672, "saturday": 613, "parent teacher": 499, "teacher meeting": 673, "meeting scheduled": 437, "scheduled saturday": 617, "workshop": 766, "registration": 571, "closes": 129, "evening": 230, "workshop registration": 767, "registration closes": 572, "closes friday": 130, "friday evening": 284, "online": 484, "exam": 232, "online exam": 485, "exam fee": 233, "fee pending": 252, "pay immediately": 507, "http exam": 328, "fee tk": 254, "trial": 699, "needed": 464, "free trial": 281, "trial premium": 700, "premium membership": 545, "membership card": 439, "card needed": 104, "needed http": 465, "http premium": 345, "premium free": 544, "free tk": 280, "home": 312, "50000": 18, "weekly": 745, "investment": 375, "wfh": 747, "work home": 765, "home earn": 313, "earn rs": 218, "rs 50000": 610, "50000 weekly": 20, "weekly investment": 746, "investment needed": 376, "http wfh": 351, "wfh earn": 748, "earn ga": 217, "luggage": 422, "tag": 670, "number": 475, "4523": 15, "luggage claim": 423, "claim tag": 121, "tag number": 671, "number 4523": 476, "smartwatch": 650, "stock": 655, "watch": 737, "claim free": 117, "free smartwatch": 279, "smartwatch left": 651, "left stock": 401, "stock http": 656, "free watch": 282, "watch ml": 738, "order": 486, "shipped": 636, "arrive": 57, "order shipped": 487, "shipped arrive": 637, "arrive friday": 58, "deadline": 179, "extended": 242, "project deadline": 551, "deadline extended": 180, "extended friday": 243, "guest": 296, "industry": 358, "expert": 234, "postponed": 540, "guest lecture": 297, "lecture industry": 397, "industry expert": 359, "expert postponed": 235, "delivery": 187, "failed": 246, "reschedule": 591, "fail": 244, "package delivery": 491, "delivery failed": 189, "failed reschedule": 247, "reschedule http": 592, "http delivery": 326, "delivery fail": 188, "fail tk": 245, "notice": 473, "pan": 493, "bank notice": 75, "notice update": 474, "update pan": 702, "pan card": 494, "card details": 102, "details today": 195, "http pan": 340, "pan update": 495, "client": 125, "design": 190, "mockups": 449, "yesterday": 770, "client approved": 126, "approved design": 55, "design mockups": 191, "mockups yesterday": 450, "iphone": 379, "15": 9, "time": 684, "free iphone": 277, "iphone 15": 380, "15 giveaway": 10, "giveaway limited": 295, "limited time": 407, "time offer": 685, "offer click": 479, "click http": 123, "iphone ga": 381, "weather": 739, "forecast": 262, "shows": 641, "rain": 556, "weekend": 743, "plan": 522, "accordingly": 28, "weather forecast": 740, "forecast shows": 263, "shows rain": 642, "rain weekend": 557, "weekend plan": 744, "plan accordingly": 523, "debit": 183, "used": 715, "foreign": 264, "country": 157, "alert": 41, "debit card": 184, "card used": 106, "used foreign": 716, "foreign country": 265, "country confirm": 158, "confirm http": 145, "http card": 322, "card alert": 100, "alert tk": 42, "reward": 603, "points": 530, "expiring": 240, "redeem": 565, "card reward": 105, "reward points": 604, "points expiring": 531, "expiring today": 241, "today redeem": 690, "redeem http": 566, "http points": 344, "points redeem": 532, "redeem ml": 567, "winning": 756, "hackathon": 300, "congratulations winning": 154, "winning team": 757, "team hackathon": 676, "promotion": 553, "congratulations promotion": 152, "domain": 205, "certificate": 110, "needs": 466, "suspension": 666, "cert": 108, "domain certificate": 207, "certificate needs": 111, "needs renewal": 467, "renewal avoid": 582, "avoid suspension": 72, "suspension http": 667, "http domain": 327, "domain cert": 206, "cert cf": 109, "new": 468, "document": 201, "available": 66, "intranet": 371, "new office": 469, "office policy": 482, "policy document": 534, "document available": 202, "available intranet": 67, "visit": 736, "thanks shopping": 682, "shopping visit": 640, "invest": 372, "1000": 7, "join": 385, "quick": 554, "invest rs": 374, "rs 1000": 607, "1000 rs": 8, "50000 24": 19, "hours join": 316, "join http": 386, "http invest": 335, "invest quick": 373, "quick ml": 555, "flight": 260, "booking": 80, "pnr": 528, "abc123": 21, "flight booking": 261, "booking confirmed": 81, "confirmed pnr": 148, "pnr abc123": 529, "request": 589, "leave": 394, "hr": 317, "request leave": 590, "leave approved": 395, "approved hr": 56, "mobile": 447, "draw": 212, "mobile number": 448, "number won": 477, "won lucky": 761, "lucky draw": 420, "draw send": 214, "send details": 627, "details claim": 193, "http lucky": 337, "draw ml": 213, "seminar": 624, "ai": 39, "auditorium": 65, "seminar ai": 625, "ai held": 40, "held auditorium": 305, "subscription": 662, "renew": 579, "subscription renew": 663, "renew month": 580}, "idf": [4.7013019741, 4.7013019741, 4.7013019741, 3.7850112422, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.7850112422, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.0081547936, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.6026896854, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.315007613, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.315007613, 4.7013019741, 4.7013019741, 3.1972245773, 4.7013019741, 4.7013019741, 4.0081547936, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.0081547936, 4.7013019741, 4.7013019741, 4.7013019741, 3.7850112422, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.0081547936, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.0918640617, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.7850112422, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.0918640617, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 1.680877088, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.4485390056, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.7850112422, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.0081547936, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.0081547936, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.0081547936, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 2.8294997972, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.0081547936, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.6026896854, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.295836866, 4.295836866, 4.295836866, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.0081547936, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.295836866, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.6026896854, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.0081547936, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.0081547936, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 2.8294997972, 3.6026896854, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.0081547936, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.7850112422, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.6026896854, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 3.7850112422, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.295836866, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741, 4.7013019741], "stop_words": ["a", "about", "above", "across", "after", "afterwards", "again", "against", "all", "almost", "alone", "along", "already", "also", "although", "always", "am", "among", "amongst", "amoungst", "amount", "an", "and", "another", "any", "anyhow", "anyone", "anything", "anyway", "anywhere", "are", "around", "as", "at", "back", "be", "became", "because", "become", "becomes", "becoming", "been", "before", "beforehand", "behind", "being", "below", "beside", "besides", "between", "beyond", "bill", "both", "bottom", "but", "by", "call", "can", "cannot", "cant", "co", "con", "could", "couldnt", "cry", "de", "describe", "detail", "do", "done", "down", "due", "during", "each", "eg", "eight", "either", "eleven", "else", "elsewhere", "empty", "enough", "etc", "even", "ever", "every", "everyone", "everything", "everywhere", "except", "few", "fifteen", "fifty", "fill", "find", "fire", "first", "five", "for", "former", "formerly", "forty", "found", "four", "from", "front", "full", "further", "get", "give", "go", "had", "has", "hasnt", "have", "he", "hence", "her", "here", "hereafter", "hereby", "herein", "hereupon", "hers", "herself", "him", "himself", "his", "how", "however", "hundred", "i", "ie", "if", "in", "inc", "indeed", "interest", "into", "is", "it", "its", "itself", "keep", "last", "latter", "latterly", "least", "less", "ltd", "made", "many", "may", "me", "meanwhile", "might", "mill", "mine", "more", "moreover", "most", "mostly", "move", "much", "must", "my", "myself", "name", "namely", "neither", "never", "nevertheless", "next", "nine", "no", "nobody", "none", "noone", "nor", "not", "nothing", "now", "nowhere", "of", "off", "often", "on", "once", "one", "only", "onto", "or", "other", "others", "otherwise", "our", "ours", "ourselves", "out", "over", "own", "part", "per", "perhaps", "please", "put", "rather", "re", "same", "see", "seem", "seemed", "seeming", "seems", "serious", "several", "she", "should", "show", "side", "since", "sincere", "six", "sixty", "so", "some", "somehow", "someone", "something", "sometime", "sometimes", "somewhere", "still", "such", "system", "take", "ten", "than", "that", "the", "their", "them", "themselves", "then", "thence", "there", "thereafter", "thereby", "therefore", "therein", "thereupon", "these", "they", "thick", "thin", "third", "this", "those", "though", "three", "through", "throughout", "thru", "thus", "to", "together", "too", "top", "toward", "towards", "twelve", "twenty", "two", "un", "under", "until", "up", "upon", "us", "very", "via", "was", "we", "well", "were", "what", "whatever", "when", "whence", "whenever", "where", "whereafter", "whereas", "whereby", "wherein", "whereupon", "wherever", "whether", "which", "while", "whither", "who", "whoever", "whole", "whom", "whose", "why", "will", "with", "within", "without", "would", "yet", "you", "your", "yours", "yourself", "yourselves"]}};
+</script>
+  <script>
+/**
+ * CyberShield browser-side ML inference engine.
+ * Runs the REAL trained models (converted to JS) with zero server:
+ *   - Random Forest phishing URL classifier (100 trees)
+ *   - TF-IDF + Multinomial Naive Bayes message classifier
+ * Mirrors scikit-learn semantics exactly (verified by scripts/parity_test.mjs).
+ */
+(function (global) {
+  "use strict";
+
+  // ------------------------------------------------------------------
+  // 1. URL feature extraction - identical formulas to train_models.py
+  // ------------------------------------------------------------------
+  const SUSPICIOUS_TLDS = [".tk", ".ml", ".ga", ".cf", ".gq", ".top", ".xyz", ".club", ".work", ".click"];
+  const SUSPICIOUS_WORDS = ["login", "verify", "update", "secure", "account", "password", "bank",
+    "free", "winner", "prize", "gift", "claim", "urgent", "suspended",
+    "limited", "offer", "bonus", "discount", "refund"];
+
+  function extractUrlFeatures(url) {
+    const features = {};
+    features.url_length = url.length;
+    features.num_dots = (url.match(/\./g) || []).length;
+    features.num_hyphens = (url.match(/-/g) || []).length;
+    features.num_underscores = (url.match(/_/g) || []).length;
+    features.num_slashes = (url.match(/\//g) || []).length;
+    features.num_digits = (url.match(/\d/g) || []).length;
+    features.has_ip = /\d+\.\d+\.\d+\.\d+/.test(url) ? 1 : 0;
+    features.has_at = url.indexOf("@") !== -1 ? 1 : 0;
+    features.has_https = url.startsWith("https") ? 1 : 0;
+    features.has_port = url.split("//").pop().split("/")[0].indexOf(":") !== -1 ? 1 : 0;
+    features.num_subdomains = url.indexOf("//") !== -1
+      ? (url.split("//").pop().split("/")[0].match(/\./g) || []).length
+      : (url.match(/\./g) || []).length;
+    const lower = url.toLowerCase();
+    features.suspicious_tld = SUSPICIOUS_TLDS.some((t) => lower.indexOf(t) !== -1) ? 1 : 0;
+    features.num_suspicious_words = SUSPICIOUS_WORDS.filter((w) => lower.indexOf(w) !== -1).length;
+    features.has_double_slash_redirect = (url.match(/\/\//g) || []).length > 1 ? 1 : 0;
+    features.has_percent = url.indexOf("%") !== -1 ? 1 : 0;
+    features.has_equal_sign = url.indexOf("=") !== -1 ? 1 : 0;
+    features.has_question = url.indexOf("?") !== -1 ? 1 : 0;
+    return features;
+  }
+
+  // ------------------------------------------------------------------
+  // 2. Random Forest inference (mirrors sklearn predict/predict_proba)
+  // ------------------------------------------------------------------
+  function treePredict(tree, x) {
+    let node = 0;
+    // sklearn stores TREE_UNDEFINED (-2) as the feature of leaf nodes
+    while (tree.feature[node] >= 0) {
+      const f = tree.feature[node];
+      const v = x[f];
+      node = v <= tree.threshold[node] ? tree.left[node] : tree.right[node];
+    }
+    return tree.value[node]; // raw class counts at leaf
+  }
+
+  function forestPredict(model, x) {
+    const sums = new Array(model.classes.length).fill(0);
+    for (const tree of model.trees) {
+      const leaf = treePredict(tree, x);
+      const total = leaf.reduce((a, b) => a + b, 0) || 1;
+      for (let c = 0; c < leaf.length; c++) sums[c] += leaf[c] / total;
+    }
+    const n = model.trees.length;
+    const proba = sums.map((s) => s / n);
+    let best = 0;
+    for (let c = 1; c < proba.length; c++) if (proba[c] > proba[best]) best = c;
+    return { prediction: model.classes[best], proba };
+  }
+
+  // ------------------------------------------------------------------
+  // 3. TF-IDF vectoriser (mirrors sklearn TfidfVectorizer transform)
+  // ------------------------------------------------------------------
+  // Python sklearn default token_pattern is "(?u)\\b\\w\\w+\\b"; (?u) is a Python
+  // unicode flag (default in JS) so the JS equivalent is /\b\w\w+\b/g.
+  const TOKEN_RE = /\b\w\w+\b/g;
+
+  function tokenize(text) {
+    // Python: str.lower() then regex findall
+    const lowered = text.toLowerCase();
+    return lowered.match(TOKEN_RE) || [];
+  }
+
+  function ngrams(tokens, n) {
+    const out = [];
+    for (let i = 0; i + n <= tokens.length; i++) out.push(tokens.slice(i, i + n).join(" "));
+    return out;
+  }
+
+  function tfidfTransform(nbModel, text) {
+    // sklearn order: tokenize -> LOWERCASE -> remove stop words -> build n-grams
+    const tokens = tokenize(text);
+    const stopSet = nbModel._stopSet || (nbModel._stopSet = new Set(nbModel.stop_words));
+    const kept = tokens.filter((t) => !stopSet.has(t));
+    const grams = kept.concat(
+      kept.slice(0, -1).map((t, i) => kept[i] + " " + kept[i + 1])
+    );
+    const counts = new Map();
+    for (const g of grams) {
+      const idx = nbModel.vocabulary[g];
+      if (idx === undefined) continue;
+      counts.set(idx, (counts.get(idx) || 0) + 1);
+    }
+    // tf * idf, then L2 normalise
+    let sq = 0;
+    const pairs = [];
+    counts.forEach((tf, idx) => {
+      const val = tf * nbModel.idf[idx];
+      pairs.push([idx, val]);
+      sq += val * val;
+    });
+    const norm = Math.sqrt(sq) || 1;
+    return pairs.map(([idx, val]) => [idx, val / norm]);
+  }
+
+  // ------------------------------------------------------------------
+  // 4. Multinomial Naive Bayes inference (mirrors sklearn)
+  // ------------------------------------------------------------------
+  function nbPredict(model, sparseX) {
+    const nClasses = model.classes.length;
+    const jll = new Array(nClasses).fill(0);
+    for (let c = 0; c < nClasses; c++) {
+      let sum = model.class_log_prior[c];
+      const w = model.feature_log_prob[c];
+      for (const [idx, val] of sparseX) sum += val * w[idx];
+      jll[c] = sum;
+    }
+    let best = 0;
+    for (let c = 1; c < nClasses; c++) if (jll[c] > jll[best]) best = c;
+    // softmax normalisation of joint log-likelihood (sklearn predict_proba)
+    const maxJ = Math.max.apply(null, jll);
+    const exps = jll.map((v) => Math.exp(v - maxJ));
+    const total = exps.reduce((a, b) => a + b, 0);
+    const proba = exps.map((e) => e / total);
+    return { prediction: model.classes[best], proba };
+  }
+
+  // ------------------------------------------------------------------
+  // 5. Public API - analyse + explain (mirrors app.py semantics)
+  // ------------------------------------------------------------------
+  function analyzeUrl(url) {
+    const models = global.CYBER_MODELS;
+    const features = extractUrlFeatures(url);
+    const order = models.random_forest.feature_names;
+    const x = order.map((f) => features[f]);
+    const { prediction, proba } = forestPredict(models.random_forest, x);
+    const confidence = Math.max.apply(null, proba) * 100;
+
+    const riskFactors = [];
+    if (features.has_ip) riskFactors.push("URL contains IP address instead of a domain name");
+    if (features.has_at) riskFactors.push("URL contains '@' symbol (often hides the real destination)");
+    if (features.suspicious_tld) riskFactors.push("Uses a suspicious top-level domain (.tk, .ml, .ga, .cf)");
+    if (features.num_suspicious_words > 2) riskFactors.push("Contains " + features.num_suspicious_words + " suspicious keywords");
+    if (features.url_length > 75) riskFactors.push("URL is unusually long (" + features.url_length + " characters)");
+    if (features.num_dots > 4) riskFactors.push("Contains many dots (" + features.num_dots + ") suggesting nested subdomains");
+    if (!features.has_https) riskFactors.push("No HTTPS encryption (insecure connection)");
+    if (features.has_double_slash_redirect) riskFactors.push("Contains redirect indicators (multiple //)");
+
+    let predictionLabel, riskLevel;
+    if (prediction === 1) {
+      predictionLabel = "Phishing/Malicious";
+      riskLevel = confidence > 80 ? "Potentially Malicious" : "Suspicious";
+    } else {
+      predictionLabel = "Legitimate";
+      riskLevel = confidence > 90 ? "Likely Safe" : "Low Risk";
+    }
+
+    return {
+      predictionLabel,
+      confidence,
+      riskLevel,
+      riskFactors,
+      details: riskFactors.length ? riskFactors.join("; ") : "No obvious risk factors detected",
+      features,
+      proba,
+    };
+  }
+
+  const URGENCY_WORDS = ["urgent", "immediately", "now", "limited", "expires", "deadline", "today only", "final"];
+  const CREDENTIAL_WORDS = ["password", "otp", "pin", "cvv", "card number", "account number"];
+  const SCAM_WORDS = ["winner", "won", "lottery", "prize", "free", "gift", "claim", "bonus"];
+  const THREAT_WORDS = ["suspend", "blocked", "deactivate", "closed", "frozen", "penalty", "disconnection"];
+  const FINANCIAL_WORDS = ["bank", "refund", "transfer", "payment", "money", "invest"];
+
+  function analyzeMessage(text) {
+    const models = global.CYBER_MODELS;
+    const sparseX = tfidfTransform(models.naive_bayes, text);
+    const { prediction, proba } = nbPredict(models.naive_bayes, sparseX);
+    const confidence = Math.max.apply(null, proba) * 100;
+
+    const patterns = [];
+    const urlsInMsg = text.match(/http[s]?:\/\/[^\s]+/g) || [];
+    if (urlsInMsg.length) patterns.push("Contains " + urlsInMsg.length + " URL(s) - verify destination carefully");
+    const lower = text.toLowerCase();
+    const foundUrgency = URGENCY_WORDS.filter((w) => lower.indexOf(w) !== -1);
+    if (foundUrgency.length) patterns.push("Urgency pressure language detected: " + foundUrgency.join(", "));
+    const foundCred = CREDENTIAL_WORDS.filter((w) => lower.indexOf(w) !== -1);
+    if (foundCred.length) patterns.push("Requests sensitive credentials: " + foundCred.join(", "));
+    const foundScam = SCAM_WORDS.filter((w) => lower.indexOf(w) !== -1);
+    if (foundScam.length) patterns.push("Too-good-to-be-true keywords: " + foundScam.join(", "));
+    const foundThreats = THREAT_WORDS.filter((w) => lower.indexOf(w) !== -1);
+    if (foundThreats.length) patterns.push("Account threat language: " + foundThreats.join(", "));
+    const foundFin = FINANCIAL_WORDS.filter((w) => lower.indexOf(w) !== -1);
+    if (foundFin.length) patterns.push("Financial references: " + foundFin.join(", "));
+
+    let predictionLabel, riskLevel;
+    if (prediction === 1) {
+      predictionLabel = "Phishing";
+      riskLevel = confidence > 75 ? "Phishing Detected" : "Suspicious";
+    } else {
+      predictionLabel = "Legitimate";
+      riskLevel = "Likely Safe";
+    }
+
+    return {
+      predictionLabel,
+      confidence,
+      riskLevel,
+      patterns,
+      details: patterns.length ? patterns.slice(0, 10).join("; ") : "No suspicious patterns detected",
+      proba,
+    };
+  }
+
+  global.CyberML = { extractUrlFeatures, analyzeUrl, analyzeMessage };
+})(window);
+</script>
+  <script>
+/**
+ * AI Cyber Expert layer - browser calls to Z.ai GLM (OpenAI-compatible) or
+ * Google Gemini. Provider is auto-detected from the key prefix in config.js.
+ *
+ * Design guarantees:
+ *  - Never blocks the core ML features (they run fully offline).
+ *  - Every failure degrades to an honest, clearly-labelled status message.
+ */
+(function (global) {
+  "use strict";
+
+  const CFG = () => global.CYBER_CONFIG || {};
+
+  function resolveProvider() {
+    const c = CFG();
+    const choice = (c.AI_PROVIDER || "auto").toLowerCase();
+    const zaiKey = (c.ZAI_API_KEY || "").trim();
+    const gemKey = (c.GEMINI_API_KEY || "").trim();
+    if (choice === "off") return null;
+    if (choice === "gemini") return gemKey ? "gemini" : null;
+    if (choice === "zai") return zaiKey ? "zai" : null;
+    // auto: prefix wins, zai key by default
+    if (gemKey.startsWith("AIza")) return "gemini";
+    if (zaiKey) return "zai";
+    if (gemKey) return "gemini";
+    return null;
+  }
+
+  async function fetchWithTimeout(url, options, timeoutMs) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs || 45000);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function callZai(prompt, system) {
+    const c = CFG();
+    const res = await fetchWithTimeout(c.ZAI_BASE_URL + "/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + c.ZAI_API_KEY },
+      body: JSON.stringify({
+        model: c.ZAI_MODEL || "glm-4.6",
+        messages: [
+          ...(system ? [{ role: "system", content: system }] : []),
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.4,
+        max_tokens: 700,
+      }),
+    }, c.AI_TIMEOUT_MS);
+    if (!res.ok) {
+      const detail = res.status === 401 ? "authentication failed (key invalid or not activated)"
+        : res.status === 429 ? "rate limited by the provider"
+        : "HTTP " + res.status;
+      throw new Error(detail);
+    }
+    const data = await res.json();
+    const text = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    if (!text) throw new Error("empty response");
+    return text;
+  }
+
+  async function callGemini(prompt, system) {
+    const c = CFG();
+    const url = "https://generativelanguage.googleapis.com/v1beta/models/" +
+      (c.GEMINI_MODEL || "gemini-2.0-flash") + ":generateContent?key=" + encodeURIComponent(c.GEMINI_API_KEY);
+    const res = await fetchWithTimeout(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+        generationConfig: { temperature: 0.4, maxOutputTokens: 700 },
+      }),
+    }, c.AI_TIMEOUT_MS);
+    if (!res.ok) {
+      const detail = res.status === 401 || res.status === 403 ? "authentication failed (key invalid or restricted)"
+        : res.status === 429 ? "rate limited by the provider"
+        : "HTTP " + res.status;
+      throw new Error(detail);
+    }
+    const data = await res.json();
+    const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+    const text = parts && parts.map((p) => p.text || "").join("");
+    if (!text) throw new Error("empty response");
+    return text;
+  }
+
+  /**
+   * Ask the AI provider. Resolves {ok, text, provider} or {ok:false, error}.
+   * Never throws.
+   */
+  async function askAI(prompt, system) {
+    const provider = resolveProvider();
+    if (!provider) {
+      return { ok: false, error: "No AI key configured in config.js" };
+    }
+    try {
+      const text = provider === "gemini" ? await callGemini(prompt, system) : await callZai(prompt, system);
+      return { ok: true, text, provider: provider === "gemini" ? "Google Gemini" : "Z.ai GLM" };
+    } catch (err) {
+      const msg = err && err.name === "AbortError" ? "request timed out" : (err && err.message) || "request failed";
+      return { ok: false, error: msg, provider };
+    }
+  }
+
+  function aiStatus() {
+    const provider = resolveProvider();
+    return {
+      configured: provider !== null,
+      provider: provider === "gemini" ? "Google Gemini" : provider === "zai" ? "Z.ai GLM" : null,
+    };
+  }
+
+  const SYSTEM_PROMPT = [
+    "You are the AI Cyber Expert inside CyberShield, an educational cybersecurity training project.",
+    "You analyse phishing risks. Be concise, practical and safe: never provide offensive hacking steps.",
+    "Structure answers with short paragraphs or small bullet lists. Answer in the user's language.",
+  ].join(" ");
+
+  function explainScan(kind, input, result) {
+    const summary = kind === "url"
+      ? "URL: " + input + "\nML verdict: " + result.predictionLabel + " (confidence " + result.confidence.toFixed(1) + "%)" +
+        "\nExtracted features: " + JSON.stringify(result.features)
+      : "Message: " + input + "\nML verdict: " + result.predictionLabel + " (confidence " + result.confidence.toFixed(1) + "%)";
+    const prompt =
+      summary +
+      "\n\nExplain for a student: 1) why the model reached this verdict, 2) the top risk signs to check manually," +
+      " 3) one recommended action. Maximum 150 words.";
+    return askAI(prompt, SYSTEM_PROMPT);
+  }
+
+  global.CyberAI = { askAI, aiStatus, explainScan, SYSTEM_PROMPT };
+})(window);
+</script>
+  <script>
+/**
+ * CyberShield UI logic.
+ * Sections: Home, URL Scanner, Message Detector, Threat Analytics,
+ * Scan History, Reports, About + AI Cyber Expert chat.
+ * Scan history is stored in localStorage (no server needed).
+ */
+(function (global) {
+  "use strict";
+
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+  const HISTORY_KEY = "cybershield_history_v1";
+
+  // ---------------------------------------------------------------- history
+  function loadHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }
+    catch { return []; }
+  }
+  function saveScan(entry) {
+    const list = loadHistory();
+    list.unshift(entry);
+    if (list.length > 500) list.length = 500;
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+  }
+  function clearHistory() {
+    localStorage.removeItem(HISTORY_KEY);
+  }
+
+  // ---------------------------------------------------------------- router
+  function show(section) {
+    $$("main > section[data-section]").forEach((s) => {
+      s.hidden = s.dataset.section !== section;
+    });
+    $$(".nav-link").forEach((a) => a.classList.toggle("active", a.dataset.nav === section));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (section === "analytics") renderAnalytics();
+    if (section === "history") renderHistory();
+  }
+
+  // ---------------------------------------------------------------- helpers
+  function riskClass(label) {
+    if (/malicious|phishing/i.test(label)) return "danger";
+    if (/suspicious/i.test(label)) return "warn";
+    return "safe";
+  }
+
+  function nowIso() { return new Date().toISOString(); }
+  function fmtTime(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function toast(msg, kind) {
+    const el = document.createElement("div");
+    el.className = "toast " + (kind || "info");
+    el.textContent = msg;
+    $("#toasts").appendChild(el);
+    setTimeout(() => el.classList.add("show"), 10);
+    setTimeout(() => { el.classList.remove("show"); setTimeout(() => el.remove(), 400); }, 3800);
+  }
+
+  // ---------------------------------------------------------------- URL scanner
+  function scanUrl() {
+    const url = $("#url-input").value.trim();
+    const box = $("#url-result");
+    if (!url) { toast("Enter a URL to scan.", "warn"); return; }
+    const result = window.CyberML.analyzeUrl(url);
+    box.hidden = false;
+
+    const cls = riskClass(result.predictionLabel);
+    box.innerHTML = `
+      <div class="verdict ${cls}">
+        <div class="verdict-icon">${cls === "safe"
+          ? '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>'
+          : '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M12 8v4M12 16h.01"/></svg>'}</div>
+        <div>
+          <div class="verdict-label">${result.predictionLabel}</div>
+          <div class="verdict-sub">Risk level: ${result.riskLevel}</div>
+        </div>
+        <div class="verdict-conf">
+          <div class="conf-number">${result.confidence.toFixed(1)}%</div>
+          <div class="conf-caption">model confidence</div>
+        </div>
+      </div>
+      <div class="conf-bar"><div class="conf-fill ${cls}" style="width:${Math.min(100, result.confidence).toFixed(1)}%"></div></div>
+      <div class="result-grid">
+        <div class="card">
+          <h4>Risk factors</h4>
+          ${result.riskFactors.length
+            ? '<ul class="risk-list">' + result.riskFactors.map((f) => `<li>${f}</li>`).join("") + "</ul>"
+            : '<p class="muted">No obvious risk factors detected.</p>'}
+          <div class="actions">
+            <button class="btn ghost" id="url-ai-explain">AI explanation</button>
+            <button class="btn ghost" id="url-ai-chat">Ask AI expert</button>
+          </div>
+          <div class="ai-panel" id="url-ai-out" hidden></div>
+        </div>
+        <div class="card">
+          <h4>Extracted features (model input)</h4>
+          <table class="feature-table">
+            <thead><tr><th>Feature</th><th>Value</th></tr></thead>
+            <tbody>${Object.entries(result.features).map(([k, v]) => `<tr><td>${k}</td><td class="mono">${v}</td></tr>`).join("")}</tbody>
+          </table>
+        </div>
+      </div>`;
+    box.hidden = false;
+
+    saveScan({ type: "URL", input: url, prediction: result.predictionLabel, confidence: Number(result.confidence.toFixed(1)), risk_level: result.riskLevel, details: result.details, at: nowIso() });
+    updateStats();
+
+    $("#url-ai-explain").addEventListener("click", () => runAiInto($("#url-ai-out"), window.CyberAI.explainScan("url", url, result)));
+    $("#url-ai-chat").addEventListener("click", () => {
+      show("chat");
+      $("#chat-input").value = "Is this URL safe to open: " + url;
+      chatSend();
+    });
+  }
+
+  // ---------------------------------------------------------------- message detector
+  function scanMessage() {
+    const text = $("#msg-input").value.trim();
+    const box = $("#msg-result");
+    if (!text) { toast("Enter a message to analyse.", "warn"); return; }
+    const result = window.CyberML.analyzeMessage(text);
+    const cls = riskClass(result.predictionLabel);
+
+    box.innerHTML = `
+      <div class="verdict ${cls}">
+        <div class="verdict-icon">${cls === "safe"
+          ? '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>'
+          : '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M12 8v4M12 16h.01"/></svg>'}</div>
+        <div>
+          <div class="verdict-label">${result.predictionLabel}</div>
+          <div class="verdict-sub">Risk level: ${result.riskLevel}</div>
+        </div>
+        <div class="verdict-conf">
+          <div class="conf-number">${result.confidence.toFixed(1)}%</div>
+          <div class="conf-caption">model confidence</div>
+        </div>
+      </div>
+      <div class="conf-bar"><div class="conf-fill ${cls}" style="width:${Math.min(100, result.confidence).toFixed(1)}%"></div></div>
+      <div class="result-grid">
+        <div class="card">
+          <h4>Detected patterns</h4>
+          ${result.patterns.length
+            ? '<ul class="risk-list">' + result.patterns.map((f) => `<li>${f}</li>`).join("") + "</ul>"
+            : '<p class="muted">No suspicious patterns detected.</p>'}
+          <div class="actions">
+            <button class="btn ghost" id="msg-ai-explain">AI explanation</button>
+          </div>
+          <div class="ai-panel" id="msg-ai-out" hidden></div>
+        </div>
+        <div class="card">
+          <h4>What the model sees</h4>
+          <p class="muted">TF-IDF vectoriser (773 features, 1-2 grams) + Multinomial Naive Bayes trained on
+          labelled SMS/email examples. Class probabilities:</p>
+          <div class="proba-row"><span>Legitimate</span><div class="conf-bar"><div class="conf-fill safe" style="width:${(result.proba[0] * 100).toFixed(1)}%"></div></div><span class="mono">${(result.proba[0] * 100).toFixed(1)}%</span></div>
+          <div class="proba-row"><span>Phishing</span><div class="conf-bar"><div class="conf-fill danger" style="width:${(result.proba[1] * 100).toFixed(1)}%"></div></div><span class="mono">${(result.proba[1] * 100).toFixed(1)}%</span></div>
+        </div>
+      </div>`;
+    box.hidden = false;
+
+    saveScan({ type: "Message", input: text, prediction: result.predictionLabel, confidence: Number(result.confidence.toFixed(1)), risk_level: result.riskLevel, details: result.details, at: nowIso() });
+    updateStats();
+
+    $("#msg-ai-explain").addEventListener("click", () => runAiInto($("#msg-ai-out"), window.CyberAI.explainScan("message", text, result)));
+  }
+
+  // ---------------------------------------------------------------- AI helpers
+  async function runAiInto(outBox, promise) {
+    outBox.hidden = false;
+    outBox.innerHTML = '<p class="muted">Asking the AI expert...</p>';
+    const res = await promise;
+    if (res.ok) {
+      outBox.innerHTML = '<div class="ai-badge">AI explanation via ' + res.provider + '</div>' +
+        '<div class="ai-text">' + escapeHtml(res.text).replace(/\n/g, "<br>") + "</div>";
+    } else {
+      outBox.innerHTML = '<div class="ai-badge warn">AI unavailable: ' + escapeHtml(res.error) +
+        '.</div><p class="muted">The ML models keep working fully offline - verdicts above are unaffected.</p>';
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  // ---------------------------------------------------------------- chat
+  const chatLog = [];
+  function pushMsg(role, text) {
+    chatLog.push({ role, text });
+    renderChat();
+  }
+  function renderChat() {
+    const log = $("#chat-log");
+    log.innerHTML = chatLog.map((m) =>
+      '<div class="chat-msg ' + (m.role === "user" ? "user" : "ai") + '"><div class="bubble">' +
+      escapeHtml(m.text).replace(/\n/g, "<br>") + "</div></div>").join("");
+    log.scrollTop = log.scrollHeight;
+  }
+  async function chatSend() {
+    const input = $("#chat-input");
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = "";
+    pushMsg("user", text);
+    const typing = $("#chat-typing");
+    typing.hidden = false;
+    const res = await window.CyberAI.askAI(text, window.CyberAI.SYSTEM_PROMPT);
+    typing.hidden = true;
+    if (res.ok) pushMsg("ai", res.text);
+    else pushMsg("ai", "AI is unavailable right now (" + res.error + "). The offline ML scanners still work - try the URL or Message tabs, or check the key in config.js.");
+  }
+
+  // ---------------------------------------------------------------- dashboard
+  function scanStats() {
+    const list = loadHistory();
+    const urls = list.filter((s) => s.type === "URL");
+    const msgs = list.filter((s) => s.type === "Message");
+    const phish = list.filter((s) => /phishing|malicious/i.test(s.prediction)).length;
+    return { total: list.length, urls: urls.length, msgs: msgs.length, phish };
+  }
+
+  function updateStats() {
+    const s = scanStats();
+    $("#stat-total").textContent = s.total;
+    $("#stat-urls").textContent = s.urls;
+    $("#stat-msgs").textContent = s.msgs;
+    $("#stat-threats").textContent = s.phish;
+  }
+
+  let pieChart = null, barChart = null;
+  function renderAnalytics() {
+    const list = loadHistory();
+    const s = scanStats();
+    $("#analytics-empty").hidden = s.total > 0;
+    $("#analytics-body").hidden = s.total === 0;
+    if (s.total === 0) return;
+
+    const safe = list.filter((x) => /legitimate/i.test(x.prediction)).length;
+    const sus = list.filter((x) => /suspicious/i.test(x.risk_level)).length;
+    const danger = list.filter((x) => /malicious|phishing detected/i.test(x.risk_level)).length;
+
+    const pieCtx = $("#pie-chart");
+    if (pieChart) pieChart.destroy();
+    pieChart = new Chart(pieCtx, {
+      type: "doughnut",
+      data: {
+        labels: ["Legitimate", "Suspicious", "Malicious / Phishing"],
+        datasets: [{ data: [safe, sus, Math.max(0, s.phish - sus)], backgroundColor: ["#22c55e", "#f59e0b", "#ef4444"], borderColor: "#0b1220", borderWidth: 2 }],
+      },
+      options: { plugins: { legend: { labels: { color: "#cbd5e1" } } } },
+    });
+
+    // scans per day (last 7 days)
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      days.push(d.toISOString().slice(0, 10));
+    }
+    const perDay = days.map((day) => list.filter((x) => (x.at || "").slice(0, 10) === day).length);
+    const barCtx = $("#bar-chart");
+    if (barChart) barChart.destroy();
+    barChart = new Chart(barCtx, {
+      type: "bar",
+      data: {
+        labels: days.map((d) => d.slice(5)),
+        datasets: [{ label: "Scans", data: perDay, backgroundColor: "#22d3ee" }],
+      },
+      options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { color: "#94a3b8" }, grid: { color: "#1e293b" } }, y: { beginAtZero: true, ticks: { color: "#94a3b8", precision: 0 }, grid: { color: "#1e293b" } } } },
+    });
+  }
+
+  // ---------------------------------------------------------------- history table
+  let historyFilter = "All";
+  function renderHistory() {
+    let list = loadHistory();
+    if (historyFilter !== "All") {
+      if (historyFilter === "URL" || historyFilter === "Message") list = list.filter((s) => s.type === historyFilter);
+      else list = list.filter((s) => s.prediction.toLowerCase().includes(historyFilter.toLowerCase()));
+    }
+    const body = $("#history-tbody");
+    $("#history-empty").hidden = list.length > 0;
+    $("#history-table").hidden = list.length === 0;
+    body.innerHTML = list.slice(0, 100).map((s) => `
+      <tr>
+        <td><span class="pill ${s.type === "URL" ? "pill-cyan" : "pill-violet"}">${s.type}</span></td>
+        <td class="cell-input" title="${escapeHtml(s.input)}">${escapeHtml(s.input.length > 70 ? s.input.slice(0, 70) + "..." : s.input)}</td>
+        <td><span class="pill ${riskClass(s.prediction) === "safe" ? "pill-green" : riskClass(s.prediction) === "warn" ? "pill-amber" : "pill-red"}">${s.prediction}</span></td>
+        <td class="mono">${s.confidence.toFixed ? s.confidence.toFixed(1) : s.confidence}%</td>
+        <td class="muted">${fmtTime(s.at)}</td>
+      </tr>`).join("");
+  }
+
+  // ---------------------------------------------------------------- reports
+  function downloadFile(name, content, mime) {
+    const blob = new Blob([content], { type: mime });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function exportCsv() {
+    const list = loadHistory();
+    if (!list.length) { toast("No scans to export yet.", "warn"); return; }
+    const rows = [["timestamp", "type", "input", "prediction", "confidence_percent", "risk_level", "details"]];
+    list.forEach((s) => rows.push([s.at, s.type, s.input, s.prediction, s.confidence, s.risk_level, s.details]));
+    const csv = rows.map((r) => r.map((c) => '"' + String(c).replace(/"/g, '""') + '"').join(",")).join("\n");
+    downloadFile("cybershield_report_" + new Date().toISOString().slice(0, 10) + ".csv", csv, "text/csv");
+    toast("CSV report downloaded.", "ok");
+  }
+
+  function exportTxt() {
+    const list = loadHistory();
+    if (!list.length) { toast("No scans to export yet.", "warn"); return; }
+    const s = scanStats();
+    const lines = [
+      "AI CYBERSHIELD - SECURITY SCAN REPORT",
+      "Generated: " + new Date().toLocaleString(),
+      "",
+      "SUMMARY",
+      "  Total scans : " + s.total,
+      "  URL scans   : " + s.urls,
+      "  Messages    : " + s.msgs,
+      "  Threats     : " + s.phish,
+      "",
+      "DETAILED LOG",
+      "-".repeat(70),
+    ];
+    list.forEach((x, i) => {
+      lines.push((i + 1) + ". [" + fmtTime(x.at) + "] " + x.type + " -> " + x.prediction +
+        " (" + x.confidence + "% confidence, " + x.risk_level + ")");
+      lines.push("   Input: " + x.input.slice(0, 120));
+      lines.push("   Notes: " + x.details);
+      lines.push("");
+    });
+    downloadFile("cybershield_report_" + new Date().toISOString().slice(0, 10) + ".txt", lines.join("\n"), "text/plain");
+    toast("TXT report downloaded.", "ok");
+  }
+
+  // ---------------------------------------------------------------- boot
+  function on(sel, ev, fn) {
+    const el = $(sel);
+    if (el) el.addEventListener(ev, fn);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // nav
+    $$(".nav-link").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); show(a.dataset.nav); }));
+    $$("[data-goto]").forEach((b) => b.addEventListener("click", (e) => { e.preventDefault(); show(b.dataset.goto); }));
+
+    // scanners
+    on("#url-scan-btn", "click", scanUrl);
+    on("#url-input", "keydown", (e) => { if (e.key === "Enter") scanUrl(); });
+    on("#msg-scan-btn", "click", scanMessage);
+    $$(".sample-url").forEach((b) => b.addEventListener("click", () => { $("#url-input").value = b.dataset.url; scanUrl(); }));
+    $$(".sample-msg").forEach((b) => b.addEventListener("click", () => { $("#msg-input").value = b.dataset.msg; scanMessage(); }));
+
+    // chat
+    on("#chat-send", "click", chatSend);
+    on("#chat-input", "keydown", (e) => { if (e.key === "Enter") chatSend(); });
+
+    // history + reports
+    $$("[data-hfilter]").forEach((b) => b.addEventListener("click", () => {
+      historyFilter = b.dataset.hfilter;
+      $$("[data-hfilter]").forEach((x) => x.classList.toggle("active", x === b));
+      renderHistory();
+    }));
+    on("#clear-history", "click", () => {
+      if (confirm("Delete all saved scan history from this browser?")) {
+        clearHistory(); renderHistory(); updateStats(); toast("History cleared.", "ok");
+      }
+    });
+    on("#export-csv", "click", exportCsv);
+    on("#export-txt", "click", exportTxt);
+    on("#report-csv", "click", exportCsv);
+    on("#report-txt", "click", exportTxt);
+
+    // AI status chip
+    const st = window.CyberAI.aiStatus();
+    const chip = $("#ai-chip");
+    chip.textContent = st.configured ? "AI Cyber Expert: " + st.provider : "AI expert offline (no key) - ML scans fully active";
+    chip.className = "ai-chip " + (st.configured ? "" : "off");
+
+    updateStats();
+    pushMsg("ai", "Hello! I am the AI Cyber Expert. Ask me anything about phishing, suspicious links or safe browsing habits. Note: I answer via the API key configured in config.js - if the key is offline, the on-page ML scanners still work without me.");
+    show("home");
+  });
+})(window);
+</script>
+</body>
+</html>
