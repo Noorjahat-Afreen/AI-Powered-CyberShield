@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI CyberShield - Phishing Detection with Machine Learning</title>
+  <meta name="description" content="AI-powered cybersecurity platform that detects phishing URLs and suspicious messages using Machine Learning - Random Forest and Naive Bayes running fully in your browser." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2322d3ee' d='M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- ================= NAVBAR ================= -->
+  <header class="topbar">
+    <div class="wrap bar-inner">
+      <a class="brand" href="#" data-goto="home">
+        <span class="brand-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+        </span>
+        <span>
+          <strong>AI CyberShield</strong>
+          <small>B.TECH CSE &middot; AI + CYBERSECURITY</small>
+        </span>
+      </a>
+      <nav class="nav">
+        <a href="#" class="nav-link" data-nav="home">Home</a>
+        <a href="#" class="nav-link" data-nav="urlscanner">URL Scanner</a>
+        <a href="#" class="nav-link" data-nav="messages">Message Detector</a>
+        <a href="#" class="nav-link" data-nav="analytics">Analytics</a>
+        <a href="#" class="nav-link" data-nav="history">History</a>
+        <a href="#" class="nav-link" data-nav="reports">Reports</a>
+        <a href="#" class="nav-link" data-nav="chat">AI Expert</a>
+        <a href="#" class="nav-link" data-nav="about">About</a>
+      </nav>
+      <span class="ai-chip" id="ai-chip">AI status...</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- ================= HOME ================= -->
+    <section data-section="home">
+      <div class="hero">
+        <div class="hero-text">
+          <span class="kicker">MACHINE LEARNING &middot; RUNS 100% IN YOUR BROWSER</span>
+          <h1>Detect phishing <span class="accent">before it clicks you</span></h1>
+          <p class="lead">
+            CyberShield analyses URLs and messages with two real trained models -
+            a <strong>Random Forest</strong> (100 decision trees) and
+            <strong>TF-IDF + Naive Bayes</strong> - converted to run offline in your browser.
+            Nothing you scan leaves your device.
+          </p>
+          <div class="hero-actions">
+            <button class="btn primary" data-goto="urlscanner">Scan a URL</button>
+            <button class="btn ghost" data-goto="messages">Check a message</button>
+          </div>
+          <div class="stat-row">
+            <div class="stat"><span class="stat-num" id="stat-total">0</span><span class="stat-cap">Scans</span></div>
+            <div class="stat"><span class="stat-num" id="stat-urls">0</span><span class="stat-cap">URLs checked</span></div>
+            <div class="stat"><span class="stat-num" id="stat-msgs">0</span><span class="stat-cap">Messages checked</span></div>
+            <div class="stat"><span class="stat-num" id="stat-threats">0</span><span class="stat-cap">Threats found</span></div>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="180" height="180" fill="none" stroke="url(#g1)" stroke-width="1.2"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#34d399"/></linearGradient></defs><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="card feature">
+          <div class="card-ico cyan"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><link xmlns="http://www.w3.org/2000/svg" d=""/><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></div>
+          <h3>URL Phishing Scanner</h3>
+          <p>17 engineered features (IP hosts, suspicious TLDs, keywords, structure) fed to a Random Forest classifier trained on legitimate and phishing URL patterns.</p>
+        </div>
+        <div class="card feature">
+          <div class="card-ico violet"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <h3>Message Detector</h3>
+          <p>TF-IDF vectorisation with word n-grams plus a Multinomial Naive Bayes classifier spot scam SMS and emails - urgent tone, credential requests, too-good-to-be-true offers.</p>
+        </div>
+        <div class="card feature">
+          <div class="card-ico green"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></div>
+          <h3>AI Cyber Expert</h3>
+          <p>Chat with an AI assistant that explains verdicts and safe browsing habits via the API key in <code>config.js</code>. The ML scanners work fully offline without it.</p>
+        </div>
+      </div>
+
+      <div class="card note">
+        <strong>Privacy by design:</strong> every scan runs locally with JavaScript implementations of the trained
+        scikit-learn models (verified prediction-exact). History lives in your browser's localStorage only.
+      </div>
+    </section>
+
+    <!-- ================= URL SCANNER ================= -->
+    <section data-section="urlscanner" hidden>
+      <h2 class="page-title">URL Phishing Scanner</h2>
+      <p class="page-sub">Random Forest &middot; 100 trees &middot; 17 features &middot; prediction runs offline in your browser.</p>
+      <div class="card">
+        <label class="label" for="url-input">Enter a URL</label>
+        <div class="input-row">
+          <input id="url-input" class="input" type="text" placeholder="https://example.com/login" spellcheck="false" />
+          <button class="btn primary" id="url-scan-btn">Scan URL</button>
+        </div>
+        <div class="samples">
+          <span class="muted small">Try samples:</span>
+          <button class="chip sample-url" data-url="https://www.google.com/search?q=cybersecurity">google.com/search</button>
+          <button class="chip sample-url" data-url="http://secure-paypal-update.tk/login">secure-paypal-update.tk</button>
+          <button class="chip sample-url" data-url="http://192.168.1.1:8080/verify-account?ref=%20ok">IP host with port</button>
+          <button class="chip sample-url" data-url="https://www.amazon.in/dp/B0ABC123?ref_=search">amazon.in product</button>
+        </div>
+      </div>
+      <div id="url-result" hidden></div>
+    </section>
+
+    <!-- ================= MESSAGE DETECTOR ================= -->
+    <section data-section="messages" hidden>
+      <h2 class="page-title">Phishing Message Detector</h2>
+      <p class="page-sub">TF-IDF + Multinomial Naive Bayes &middot; word 1-2 grams &middot; prediction runs offline in your browser.</p>
+      <div class="card">
+        <label class="label" for="msg-input">Paste an SMS / email / WhatsApp text</label>
+        <textarea id="msg-input" class="input" rows="5" placeholder="e.g. URGENT: Your bank account has been suspended. Click here to verify..."></textarea>
+        <div class="input-row mt">
+          <button class="btn primary" id="msg-scan-btn">Analyse message</button>
+        </div>
+        <div class="samples">
+          <span class="muted small">Try samples:</span>
+          <button class="chip sample-msg" data-msg="Hi, can we meet tomorrow at 3 PM for the project discussion?">Normal meeting msg</button>
+          <button class="chip sample-msg" data-msg="URGENT: Your bank account has been suspended. Click here to verify: http://suspicious-link.tk">Bank suspension scam</button>
+          <button class="chip sample-msg" data-msg="Congratulations! You've won $1,000,000. Claim your prize now: http://fake-prize.ml">Lottery scam</button>
+        </div>
+      </div>
+      <div id="msg-result" hidden></div>
+    </section>
+
+    <!-- ================= ANALYTICS ================= -->
+    <section data-section="analytics" hidden>
+      <h2 class="page-title">Threat Analytics</h2>
+      <p class="page-sub">Visual overview of your scans - computed from local history.</p>
+      <p class="card muted" id="analytics-empty">No scans yet. Run a few URL or message scans and return here for live charts.</p>
+      <div class="grid2" id="analytics-body" hidden>
+        <div class="card"><h4>Verdict breakdown</h4><canvas id="pie-chart" height="230"></canvas></div>
+        <div class="card"><h4>Scans per day (last 7 days)</h4><canvas id="bar-chart" height="230"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ================= HISTORY ================= -->
+    <section data-section="history" hidden>
+      <h2 class="page-title">Scan History</h2>
+      <p class="page-sub">Stored locally in your browser (localStorage). Never uploaded anywhere.</p>
+      <div class="toolbar">
+        <div class="chips">
+          <button class="chip active" data-hfilter="All">All</button>
+          <button class="chip" data-hfilter="URL">URLs</button>
+          <button class="chip" data-hfilter="Message">Messages</button>
+          <button class="chip" data-hfilter="Phishing">Threats</button>
+        </div>
+        <button class="btn ghost danger" id="clear-history">Clear history</button>
+      </div>
+      <p class="card muted" id="history-empty">Nothing here yet - your scans will appear after the first URL or message check.</p>
+      <div class="card table-card" id="history-table" hidden>
+        <table class="history-table">
+          <thead><tr><th>Type</th><th>Input</th><th>Verdict</th><th>Confidence</th><th>When</th></tr></thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= REPORTS ================= -->
+    <section data-section="reports" hidden>
+      <h2 class="page-title">Security Reports</h2>
+      <p class="page-sub">Export your complete scan log for documentation or project submission.</p>
+      <div class="grid2">
+        <div class="card">
+          <h4>CSV report</h4>
+          <p class="muted">Spreadsheet format - opens in Excel / Google Sheets. One row per scan with verdict, confidence and risk level.</p>
+          <button class="btn primary" id="report-csv">Download CSV</button>
+        </div>
+        <div class="card">
+          <h4>TXT report</h4>
+          <p class="muted">Formatted text report with a summary section and detailed scan log - ready to print or attach.</p>
+          <button class="btn ghost" id="report-txt">Download TXT</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= AI CHAT ================= -->
+    <section data-section="chat" hidden>
+      <h2 class="page-title">AI Cyber Expert</h2>
+      <p class="page-sub">Explanations, safety tips and second opinions - powered by the key in <code>config.js</code>.</p>
+      <div class="card chat-card">
+        <div class="chat-log" id="chat-log"></div>
+        <div class="chat-typing muted" id="chat-typing" hidden>AI expert is thinking...</div>
+        <div class="input-row mt">
+          <input id="chat-input" class="input" type="text" placeholder="Ask about a suspicious link, OTP scam, safe browsing..." />
+          <button class="btn primary" id="chat-send">Send</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ABOUT ================= -->
+    <section data-section="about" hidden>
+      <h2 class="page-title">About the project</h2>
+      <div class="grid2">
+        <div class="card">
+          <h4>How the ML works</h4>
+          <p>CyberShield trains two scikit-learn models (<code>train_models.py</code>) and converts them to JavaScript
+          so this static site can score inputs instantly, with no server:</p>
+          <ul class="risk-list">
+            <li><strong>Random Forest</strong> - 100 decision trees, max depth 10, majority vote over 17 URL features.</li>
+            <li><strong>TF-IDF + Multinomial NB</strong> - 773 word/n-gram features, log-probability scoring.</li>
+            <li>Browser engine verified prediction-exact against sklearn (100% match on held-out fixtures).</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Tech stack</h4>
+          <ul class="risk-list">
+            <li>Python, scikit-learn, pandas (training pipeline)</li>
+            <li>HTML5 + CSS3 + vanilla JS (this site)</li>
+            <li>Chart.js (analytics), localStorage (history), no backend needed</li>
+            <li>Optional AI layer: Z.ai GLM / Google Gemini via <code>config.js</code></li>
+          </ul>
+          <p class="muted small mt">Educational project - verdicts are model estimates, not a substitute for careful browsing.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <span>AI CyberShield - B.Tech CSE major project (AI + Cybersecurity)</span>
+      <span class="muted">ML runs locally &middot; history stays in your browser</span>
+    </div>
+  </footer>
+
+  <div id="toasts"></div>
+
+  <script src="config.js"></script>
+  <script src="js/models.js"></script>
+  <script src="js/analyzer.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
